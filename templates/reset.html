@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Choose a new password — ShareHope{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}" />
+{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+  <div class="wrap auth-grid">
+    <div class="auth-aside">
+      <span class="eyebrow">Almost back</span>
+      <h1>Choose a<br /><em class="accent">new password.</em></h1>
+      <p class="lede">Links expire after 1 hour and work only once. After saving, old links stop working.</p>
+    </div>
+    <div class="form-card">
+      <h2>Reset password</h2>
+      <p class="form-sub">Minimum 8 characters.</p>
+      <form method="post" action="/reset-password/{{ token }}" data-auth-form novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="field">
+          <label for="password">New password</label>
+          <input id="password" name="password" type="password" autocomplete="new-password" required minlength="8" placeholder="Choose carefully" />
+          <span class="field-error" aria-live="polite"></span>
+        </div>
+        <div class="field">
+          <label for="confirm">Confirm new password</label>
+          <input id="confirm" name="confirm" type="password" autocomplete="new-password" required placeholder="Repeat it" />
+          <span class="field-error" aria-live="polite"></span>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" type="submit">Save new password</button>
+          <a class="btn btn-outline" href="/login">Back to log in</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/auth.js') }}" defer></script>
+{% endblock %}

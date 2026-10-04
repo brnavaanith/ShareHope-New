@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Messages & Chat — ShareHope{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}" />{% endblock %}
+
+{% block content %}
+<section class="page">
+  <div class="wrap">
+    <div class="page-head reveal">
+      <div><span class="eyebrow">Messages · donor ↔ NGO</span><h1>Coordinate the handover.</h1></div>
+      <p>Signed in as {{ current_user.name }}. Threads are per-donation so pickup details never get lost. Messages refresh by polling every few seconds.</p>
+    </div>
+
+    <div class="msg-grid">
+      <div class="thread-list reveal" role="listbox" aria-label="Conversations" id="threadList">
+        {% if conversations %}
+          {% for c in conversations %}
+          <a href="/messages?with={{ c.other.id }}" role="option" aria-selected="{{ 'true' if active_other and active_other.id == c.other.id else 'false' }}" {% if active_other and active_other.id == c.other.id %}aria-current="true"{% endif %} style="display:block;text-decoration:none;color:inherit;border:1px solid {% if active_other and active_other.id == c.other.id %}var(--line-strong){% else %}transparent{% endif %};border-radius:var(--radius-sm);padding:12px;{% if active_other and active_other.id == c.other.id %}background:#fff;{% endif %}">
+            <strong>{{ c.other.org_name or c.other.name }}</strong>
+            <span class="small muted" style="display:block">{{ c.other.name }} · {{ c.other.role }}</span>
+            <span class="small" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.latest.content|truncate(80) }}</span>
+            <span class="small muted">{{ c.last_at.strftime('%d %b %Y, %H:%M') if c.last_at else '' }}{% if c.unread %} · <span class="pill pill-pending">{{ c.unread }} new</span>{% endif %}</span>
+          </a>
+          {% endfor %}
+        {% else %}
+          <div class="honest-empty" style="border:0;padding:22px"><h3>No conversations yet.</h3><p class="small">Threads appear once you exchange messages with a connected donor or NGO. Start one below.</p></div>
+        {% endif %}
+
+        {% if contactables %}
+        <div style="margin-top:12px;border-top:1px solid var(--line);padding-top:12px">
+          <h3 style="font-size:.95rem">Start a new conversation</h3>
+          <p class="small muted">Only donors and NGOs connected to your donations can be messaged.</p>
+          <form method="post" action="/messages/send" aria-label="Start conversation">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <div class="field" style="margin-bottom:8px"><label for="newTo">Recipient</label>
+              <select id="newTo" name="to" required>
+                {% for u in contactables %}<option value="{{ u.id }}">{{ u.org_name or u.name }} — {{ u.name }} ({{ u.role }})</option>{% endfor %}
+              </select>
+            </div>
+            <div class="field" style="margin-bottom:8px"><label for="newContent">First message</label>
+              <input id="newContent" name="content" type="text" required maxlength="2000" placeholder="e.g. Tue pickup works for us?" />
+            </div>
+            <button class="btn btn-outline btn-sm" type="submit">Start chat</button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="thread-view reveal" aria-label="Message thread" aria-live="polite">
+        {% if active_other %}
+          <h3>{{ active_other.org_name or active_other.name }} <span class="small muted">· {{ active_other.name }} ({{ active_other.role }})</span></h3>
+          <p class="small muted" id="msgStatus">Polling for new messages every 5s. Not real-time.</p>
+          <p class="small" id="msgError" role="alert" hidden style="color:var(--terra-deep)">Could not refresh messages — retrying.</p>
+          <div id="msgThread" data-with-id="{{ active_other.id }}" data-json-url="/messages/thread/{{ active_other.id }}/json" data-last-id="{{ thread[-1].id if thread else 0 }}">
+            {% if thread %}
+              {% for m in thread %}
+                {% if m.sender_id == current_user.id %}
+                <div class="bubble me" data-msg-id="{{ m.id }}"><strong>You</strong> · <span class="small">{{ m.created_at.strftime('%d %b %Y, %H:%M') if m.created_at else '' }}</span><br />{{ m.content }}</div>
+                {% else %}
+                <div class="bubble them" data-msg-id="{{ m.id }}"><strong>{{ m.sender.name if m.sender else '—' }}</strong> · <span class="small">{{ m.created_at.strftime('%d %b %Y, %H:%M') if m.created_at else '' }}</span><br />{{ m.content }}</div>
+                {% endif %}
+              {% endfor %}
+            {% else %}
+              <div class="honest-empty" style="border:0"><h3>No messages yet.</h3><p class="small">Say hello — your first message starts this thread.</p></div>
+            {% endif %}
+          </div>
+          <form class="composer" id="msgComposer" method="post" action="/messages/send" aria-label="Message composer">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <input type="hidden" name="to" value="{{ active_other.id }}" />
+            <label class="small muted" for="msgbox" style="align-self:center">Reply</label>
+            <input id="msgbox" name="content" type="text" required maxlength="2000" placeholder="Write a message…" autocomplete="off" />
+            <button class="btn btn-primary btn-sm" id="msgSendBtn" type="submit">Send</button>
+          </form>
+          <p class="small muted" id="msgSending" hidden>Sending…</p>
+        {% else %}
+          <h3>{% if conversations %}Select a conversation.{% else %}How threads work{% endif %}</h3>
+          {% if conversations %}
+          <p class="small muted">Choose a thread on the left to read and reply. Incoming messages are marked read when you open them.</p>
+          {% else %}
+          <p class="small muted">Pick a connected donor or NGO on the left to start. Messages persist — sign out and back in and they are still here.</p>
+          {% endif %}
+          <div class="bubble them">Hello! We can accept 35 of your 40 books — is Tue pickup possible?</div>
+          <div class="bubble me">Tue works. I’ll pack grade-wise bundles.</div>
+          <p class="small muted">Layout preview — your real messages appear here once you start chatting.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/messages.js') }}" defer></script>{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Explore donations — ShareHope{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboards.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}" />
+{% endblock %}
+
+{% block content %}
+<section class="page">
+  <div class="wrap">
+    <div class="page-head reveal">
+      <div><span class="eyebrow">Browse · donor offers</span><h1>Explore donations.</h1></div>
+      <p>Search live offers by keyword, category and place. Only pending offers appear here — accepted ones move to tracking.</p>
+    </div>
+
+    <div class="filters reveal" data-filter-root="exploreGrid" role="search" aria-label="Filter donations">
+      <div class="field"><label for="fq">Search</label><input id="fq" name="fq" type="search" placeholder="e.g. textbooks, rice, sweaters" /></div>
+      <div class="field"><label for="fcat">Category</label><select id="fcat" name="fcat"><option value="">All 8 categories</option>{% for c in categories %}<option value="{{ c.slug }}">{{ c.name }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="floc">Location</label><input id="floc" name="floc" type="text" placeholder="e.g. Pune" /></div>
+      <button class="btn btn-outline btn-sm" type="button" data-reset>Reset</button>
+    </div>
+
+    {% if donations %}
+    <div class="card-grid" id="exploreGrid">
+      {% for d in donations %}
+      <article class="d-card" data-cat="{{ d.category_slug }}" data-loc="{{ d.location }}" data-status="pending">
+        <span class="cat-kicker">{{ d.category }}</span>
+        <h3>{{ d.title }}</h3>
+        <dl><dt>Quantity</dt><dd>{{ d.quantity }}</dd><dt>Location</dt><dd>{{ d.location }}</dd><dt>Available</dt><dd>{{ d.availability }}</dd></dl>
+        <p class="small muted">Offered by {{ d.donor }} · posted {{ d.posted }}</p>
+      </article>
+      {% endfor %}
+    </div>
+    <div class="empty" data-empty><h3>No donations match.</h3><p>Try widening the filters.</p></div>
+    {% else %}
+    <div class="honest-empty reveal">
+      <span class="tag-placeholder">No pending offers right now</span>
+      <h3>No donations to show right now.</h3>
+      <p>Pending donor offers appear here automatically. Offer something, or check NGO needs instead.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><a class="btn btn-primary btn-sm" href="/register">Offer a donation</a><a class="btn btn-outline btn-sm" href="/requirements">View NGO needs</a></div>
+    </div>
+    {% endif %}
+
+    <h2 class="reveal" style="margin:34px 0 6px">All eight categories</h2>
+    <p class="small muted reveal">Consistent everywhere — home, explore, requirements, dashboards.</p>
+    <div class="cat-grid">
+      {% for c in categories %}
+      <a class="cat-tile reveal" href="/explore"><span class="glyph" aria-hidden="true">{{ c.glyph }}</span><strong>{{ c.name }}</strong><span>{{ c.blurb }}</span></a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/dashboards.js') }}" defer></script>{% endblock %}

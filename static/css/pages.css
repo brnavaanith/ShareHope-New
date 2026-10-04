@@ -1,0 +1,79 @@
+/* Shared browse pages: category grid, donation cards, messages. */
+.page { padding: 40px 0 64px; }
+.page-head { display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; align-items: end; margin-bottom: 26px; }
+.page-head h1 { margin-top: 12px; font-size: clamp(2rem, 4.4vw, 3.1rem); }
+.page-head p { color: var(--ink-soft); max-width: 36em; justify-self: end; }
+
+/* 8-category grid — compact editorial tiles, not a card rainbow. */
+.cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 22px 0 8px; }
+.cat-grid > * { min-width: 0; }
+.cat-tile { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 16px; display: grid; gap: 6px; align-content: start; text-decoration: none; overflow-wrap: break-word; transition: border-color var(--speed) var(--ease), transform var(--speed) var(--ease); }
+.cat-tile:hover { border-color: var(--forest); transform: translateY(-1px); }
+.cat-tile .glyph { font-family: var(--font-display); color: var(--terra-deep); font-size: 1.2rem; }
+.cat-tile strong { font-family: var(--font-display); color: var(--forest-2); font-size: 1rem; }
+.cat-tile span { font-size: 0.82rem; color: var(--muted); }
+
+/* Donation / requirement cards */
+.card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.card-grid > * { min-width: 0; }
+/* Analytics pairs: same responsive rules as .card-grid (no inline columns). */
+.duo { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
+.duo > * { min-width: 0; }
+.duo-wide { display: grid; grid-template-columns: 1fr 1.4fr; gap: 14px; margin-top: 14px; }
+.duo-wide > * { min-width: 0; }
+.d-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 18px; display: grid; gap: 8px; align-content: start; min-width: 0; overflow-wrap: break-word; }
+.d-card h3 { font-size: 1.1rem; }
+.d-card dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 0.88rem; min-width: 0; }
+.d-card dt { color: var(--muted); }
+.d-card dd { font-weight: 600; color: var(--forest-2); min-width: 0; overflow-wrap: break-word; }
+.urgent { border-top: 3px solid var(--terra); }
+.urgent-soon { border-top: 3px solid var(--gold); }
+/* Unread notification: coral spine + bolder title, inside the design system. */
+.d-card.unread { border-left: 3px solid var(--terra); }
+.d-card.unread h3 { font-weight: 700; }
+
+/* Honest empty state used wherever DB rows are not yet wired. */
+.honest-empty { border: 1px dashed var(--line-strong); background: var(--card); border-radius: var(--radius-md); padding: 34px; text-align: center; display: grid; gap: 8px; justify-items: center; min-width: 0; }
+.honest-empty > * { min-width: 0; max-width: 100%; }
+.honest-empty h3 { font-size: 1.3rem; }
+.honest-empty p { color: var(--muted); max-width: 38em; font-size: 0.94rem; }
+
+/* Messages shell */
+.msg-grid { display: grid; grid-template-columns: 320px 1fr; gap: 16px; align-items: start; }
+.msg-grid > * { min-width: 0; }
+.thread-list, .thread-view { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-md); min-width: 0; }
+.thread-list { padding: 10px; }
+.thread-list button { width: 100%; max-width: 100%; text-align: left; background: none; border: 1px solid transparent; border-radius: var(--radius-sm); padding: 12px; cursor: pointer; display: grid; gap: 2px; overflow-wrap: break-word; }
+.thread-list button:hover, .thread-list button[aria-current="true"] { border-color: var(--line-strong); background: #fff; }
+.thread-view { padding: 22px; display: grid; gap: 12px; }
+.thread-view > * { min-width: 0; }
+.bubble { border: 1px solid var(--line); border-radius: var(--radius-md); padding: 10px 14px; font-size: 0.92rem; max-width: 34em; overflow-wrap: break-word; }
+.bubble.them { background: #fff; }
+.bubble.me { background: var(--forest); color: #fff; border-color: var(--forest); justify-self: end; }
+.composer { display: flex; gap: 8px; flex-wrap: wrap; }
+.composer input { flex: 1 1 180px; min-width: 0; font: inherit; padding: 10px 12px; border: 1.5px solid var(--line-strong); border-radius: var(--radius-sm); }
+.integration-note { border-left: 3px solid var(--gold); background: #fdf4eb; padding: 12px 16px; font-size: 0.88rem; color: var(--ink-soft); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; overflow-wrap: break-word; }
+
+/* Method / stage grids (shared by browse pages and Donation Tracking) */
+.method-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 20px; }
+.method-grid > * { min-width: 0; }
+.method { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 20px; display: grid; gap: 8px; align-content: start; min-width: 0; overflow-wrap: break-word; }
+.method .step-num { font-family: var(--font-display); font-style: italic; color: var(--terra-deep); font-size: 1.6rem; }
+
+@media (max-width: 1020px) {
+  .page-head { grid-template-columns: 1fr; }
+  .page-head p { justify-self: start; }
+  .cat-grid { grid-template-columns: repeat(2, 1fr); }
+  .card-grid { grid-template-columns: 1fr 1fr; }
+  .method-grid { grid-template-columns: 1fr; }
+  .msg-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .card-grid, .duo, .duo-wide { grid-template-columns: 1fr; }
+  .cat-grid { grid-template-columns: 1fr 1fr; }
+  .honest-empty, .thread-view { padding: 22px 18px; }
+}
+@media (max-width: 430px) {
+  .cat-grid { grid-template-columns: 1fr; }
+  .page { padding: 28px 0 48px; }
+}

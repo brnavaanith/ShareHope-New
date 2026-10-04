@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}{{ req.title }} — NGO need — ShareHope{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboards.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}" />
+{% endblock %}
+
+{% block content %}
+<section class="page">
+  <div class="wrap">
+    <div class="page-head reveal">
+      <div><span class="eyebrow">NGO need · {{ req.urgency }} · {{ req.status }}</span><h1>{{ req.title }}</h1></div>
+      <p>{{ org }} · {{ category_name }}</p>
+      <p><a class="btn btn-outline btn-sm" href="/requirements">← All needs</a></p>
+    </div>
+
+    <div class="duo reveal">
+      <article class="d-card">
+        <span class="cat-kicker">{{ category_name }} · {{ req.urgency }}</span>
+        <h3>Need details</h3>
+        <dl>
+          <dt>Quantity needed</dt><dd>{{ req.required_quantity or '—' }}</dd>
+          <dt>Location</dt><dd>{{ req.location or '—' }}</dd>
+          <dt>Due</dt><dd>{{ req.deadline.strftime('%d %b %Y') if req.deadline else '—' }}</dd>
+          <dt>Status</dt><dd>{{ req.status.title() }}</dd>
+          <dt>Organisation</dt><dd>{{ org }}</dd>
+        </dl>
+        {% if req.description %}
+        <p class="small">{{ req.description }}</p>
+        {% endif %}
+        <p class="small muted">Published {{ req.created_at.strftime('%d %b %Y') if req.created_at else '' }}</p>
+      </article>
+
+      <article class="d-card">
+        {% if current_user.is_authenticated and current_user.role == "donor" %}
+          {% if req.status != "open" %}
+          <h3>This need is {{ req.status }}.</h3>
+          <p class="small muted">Only open needs accept responses. Browse other open needs.</p>
+          <a class="btn btn-outline btn-sm" href="/requirements">Browse needs</a>
+          {% elif already_responded %}
+          <h3>Response sent ✓</h3>
+          <p class="small muted">Your offer is with {{ org }}. They accept or decline from their inbox; progress shows on your donor journal and tracking.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-outline btn-sm" href="/donor">Your journal</a><a class="btn btn-outline btn-sm" href="/tracking">Tracking</a><a class="btn btn-outline btn-sm" href="/messages">Messages</a></div>
+          {% else %}
+          <h3>Respond with a donation</h3>
+          <p class="small muted">Your response creates a pending offer linked to this need. The NGO accepts or declines; nothing is handed over yet.</p>
+          <form method="post" action="/requirements/{{ req.id }}/respond" novalidate>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <div class="field"><label for="r-title">Offer title</label><input id="r-title" name="title" type="text" required placeholder="e.g. 40 school books, Grade 4–6" value="{{ form.title if form else '' }}" /></div>
+            <div class="field"><label for="r-desc">Description <span class="hint">— include condition</span></label><textarea id="r-desc" name="description" required placeholder="What exactly, what condition, how packed…">{{ form.description if form else '' }}</textarea></div>
+            <div class="field"><label for="r-qty">Quantity you can give</label><input id="r-qty" name="quantity" type="text" required placeholder="e.g. 40 books" value="{{ form.quantity if form else '' }}" /></div>
+            <div class="field"><label for="r-loc">Pickup location</label><input id="r-loc" name="location" type="text" required autocomplete="address-level2" placeholder="e.g. Kothrud, Pune" value="{{ form.location if form else req.location or '' }}" /></div>
+            <div class="field"><label for="r-avail">Availability <span class="hint">— optional</span></label><input id="r-avail" name="availability" type="text" placeholder="e.g. Tue–Thu evenings" value="{{ form.availability if form else 'Flexible' }}" /></div>
+            <p class="small muted">Category: {{ category_name }} (matches this need)</p>
+            <div class="form-actions"><button class="btn btn-primary" type="submit">Send response</button></div>
+          </form>
+          {% endif %}
+        {% elif current_user.is_authenticated %}
+          <h3>NGO and admin accounts</h3>
+          <p class="small muted">You are signed in as {{ current_user.role }}. Only donor accounts respond to needs; NGOs manage responses from their inbox.</p>
+          <a class="btn btn-outline btn-sm" href="/ngo">NGO inbox</a>
+        {% else %}
+          <h3>Log in as a donor to respond</h3>
+          <p class="small muted">Details above are public. To offer this item, log in or create a free donor account.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-primary btn-sm" href="/login?next=/requirements/{{ req.id }}">Log in to respond</a><a class="btn btn-outline btn-sm" href="/register">Create donor account</a></div>
+        {% endif %}
+      </article>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Statistics & Analytics — ShareHope{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}" />
+<style>
+.chart-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-md);padding:20px;display:grid;gap:10px;align-content:start;min-width:0;overflow-wrap:break-word}
+.chart-card h3{font-size:1.15rem}
+.chart-card svg{width:100%;min-width:0;height:auto;display:block}
+.chart-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.82rem;color:var(--muted)}
+.chart-legend i{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:6px}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+.stat-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-md);padding:18px;display:grid;gap:4px;min-width:0}
+.stat-card .stat-num{font-family:var(--font-display);font-size:2rem;color:var(--forest-2)}
+.stat-card .stat-label{font-size:.85rem;color:var(--muted)}
+.filter-bar{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-md);padding:14px 18px;display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin:16px 0}
+.filter-bar .field{display:grid;gap:4px;font-size:.85rem}
+.filter-bar input,.filter-bar select{font:inherit;padding:8px 10px;border:1.5px solid var(--line-strong);border-radius:var(--radius-sm);background:#fff}
+.data-table{width:100%;border-collapse:collapse;font-size:.85rem}
+.data-table th,.data-table td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left}
+.data-table th{color:var(--muted);font-weight:600}
+@media (max-width:1020px){.stat-grid{grid-template-columns:1fr 1fr}}
+@media (max-width:640px){.stat-grid{grid-template-columns:1fr}}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="page">
+  <div class="wrap">
+    <div class="page-head reveal">
+      <div><span class="eyebrow">Analytics · trends</span><h1>See the ledger move.</h1></div>
+      <p>Every figure below is computed from live donation, requirement and account records — no samples, no placeholders. Empty periods show zero.</p>
+    </div>
+
+    {% if db_error %}
+    <div class="integration-note reveal" role="alert">Analytics are unavailable right now. Showing empty figures — please try again later.</div>
+    {% endif %}
+
+    <form class="filter-bar reveal" method="get" action="/analytics" aria-label="Analytics filters">
+      <div class="field"><label for="fFrom">From</label><input id="fFrom" name="from" type="date" value="{{ filters.from }}" max="{{ filters.to }}" /></div>
+      <div class="field"><label for="fTo">To</label><input id="fTo" name="to" type="date" value="{{ filters.to }}" min="{{ filters.from }}" /></div>
+      <div class="field"><label for="fGran">View</label>
+        <select id="fGran" name="gran">
+          <option value="daily" {% if filters.gran == 'daily' %}selected{% endif %}>Daily</option>
+          <option value="weekly" {% if filters.gran == 'weekly' %}selected{% endif %}>Weekly</option>
+          <option value="monthly" {% if filters.gran == 'monthly' %}selected{% endif %}>Monthly</option>
+        </select>
+      </div>
+      <button class="btn btn-primary btn-sm" type="submit">Apply</button>
+      <a class="btn btn-outline btn-sm" href="/analytics">Reset</a>
+      <span class="small muted">{{ filters.from }} → {{ filters.to }} · {{ filters.gran }}</span>
+    </form>
+
+    <div class="stat-grid reveal" aria-label="Overview">
+      <div class="stat-card"><span class="stat-num" data-stat="total">{{ stats.overview.total_offers }}</span><span class="stat-label">Total donation offers</span></div>
+      <div class="stat-card"><span class="stat-num" data-stat="completed">{{ stats.overview.completed }}</span><span class="stat-label">Completed donations</span></div>
+      <div class="stat-card"><span class="stat-num" data-stat="pending">{{ stats.overview.pending }}</span><span class="stat-label">Pending donations</span></div>
+      <div class="stat-card"><span class="stat-num">{{ stats.overview.active_ngos }}</span><span class="stat-label">Active NGOs (with a requirement in range)</span></div>
+      <div class="stat-card"><span class="stat-num">{{ stats.users.donors }}</span><span class="stat-label">Registered donors (in range)</span></div>
+      <div class="stat-card"><span class="stat-num">{{ stats.overview.completion_rate }}%</span><span class="stat-label">Completion rate (handed over ÷ total)</span></div>
+    </div>
+
+    {% if stats.overview.total_offers == 0 %}
+    <div class="honest-empty reveal"><h3>No donations in this range.</h3><p class="small">Try widening the dates — or be the first to <a href="/register">offer a donation</a>. Zeros below are real, not placeholders.</p></div>
+    {% endif %}
+
+    {% if stats.personal %}
+    <div class="stat-grid reveal" aria-label="Your figures">
+      {% if stats.personal.kind == 'donor' %}
+      <div class="stat-card"><span class="stat-num">{{ stats.personal.total_offers }}</span><span class="stat-label">Your offers (in range)</span></div>
+      <div class="stat-card"><span class="stat-num">{{ stats.personal.completed }}</span><span class="stat-label">Your completed handovers</span></div>
+      <div class="stat-card"><span class="stat-num">{{ stats.personal.completion_rate }}%</span><span class="stat-label">Your completion rate</span></div>
+      {% elif stats.personal.kind == 'ngo' %}
+      <div class="stat-card"><span class="stat-num">{{ stats.personal.total_requirements }}</span><span class="stat-label">Your requirements (in range)</span></div>
+      <div class="stat-card"><span class="stat-num">{{ stats.personal.accepted_links }}</span><span class="stat-label">Offers you accepted (all time)</span></div>
+      <div class="stat-card"><span class="stat-num">{% for s in stats.personal.by_status %}{% if s.status == 'open' %}{{ s.count }}{% endif %}{% endfor %}</span><span class="stat-label">Your open needs</span></div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if stats.admin %}
+    <div class="stat-grid reveal" aria-label="Platform metadata (admin only)">
+      <div class="stat-card"><span class="stat-num">{{ stats.admin.messages }}</span><span class="stat-label">Messages exchanged (admin view)</span></div>
+      <div class="stat-card"><span class="stat-num">{{ stats.admin.notifications }}</span><span class="stat-label">Notifications sent (admin view)</span></div>
+      <div class="stat-card"><span class="stat-num">{{ stats.admin.admins }}</span><span class="stat-label">Admin accounts</span></div>
+    </div>
+    {% endif %}
+
+    <div class="duo reveal">
+      <article class="chart-card" aria-label="Donation trends chart">
+        <span class="cat-kicker">Donation trends · offers per {{ filters.gran }} (live)</span>
+        <h3>{{ stats.trends|sum(attribute='offers') }} offers in range</h3>
+        <svg id="chartLine" viewBox="0 0 480 240" role="img" aria-label="Line chart of live offers per {{ filters.gran }}"></svg>
+        <div class="chart-legend"><span><i style="background:var(--forest)"></i>Offers</span><span><i style="background:var(--terra)"></i>Completed</span></div>
+      </article>
+      <article class="chart-card" aria-label="Donations by category chart">
+        <span class="cat-kicker">Donations by category (live)</span>
+        <h3>Across all eight categories</h3>
+        <svg id="chartBar" viewBox="0 0 480 240" role="img" aria-label="Bar chart of live donations by category"></svg>
+      </article>
+    </div>
+    <div class="duo-wide reveal">
+      <article class="chart-card" aria-label="Donation status chart">
+        <span class="cat-kicker">Donation statuses (live)</span>
+        <h3>{{ stats.overview.completion_rate }}% reach handover</h3>
+        <svg id="chartPie" viewBox="0 0 240 240" role="img" aria-label="Donut chart of live donation statuses"></svg>
+        <div class="chart-legend" id="pieLegend"></div>
+      </article>
+      <article class="chart-card" aria-label="Analytics methodology">
+        <span class="cat-kicker">How these charts work</span>
+        <h3>Same cards, real queries</h3>
+        <p class="small muted">Trends count offers per day, rolled into daily / weekly / monthly buckets with empty periods as zero. Categories span the eight catalog slugs. Statuses count each offer once. Users are shown as aggregate role counts and registration buckets — no names or emails leave the database.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-outline btn-sm" href="/tracking">Track donations</a><a class="btn btn-outline btn-sm" href="/explore">Explore donations</a></div>
+        <details>
+          <summary class="small">Data tables (no JavaScript needed)</summary>
+          <h4 class="small">Offers per {{ filters.gran }}</h4>
+          <table class="data-table"><thead><tr><th>Period</th><th>Offers</th><th>Completed</th></tr></thead><tbody>
+          {% for t in stats.trends %}<tr><td>{{ t.label }}</td><td>{{ t.offers }}</td><td>{{ t.completed }}</td></tr>{% endfor %}
+          </tbody></table>
+          <h4 class="small">By category</h4>
+          <table class="data-table"><thead><tr><th>Category</th><th>Offers</th></tr></thead><tbody>
+          {% for c in stats.by_category %}<tr><td>{{ c.name }}</td><td>{{ c.offers }}</td></tr>{% endfor %}
+          </tbody></table>
+          <h4 class="small">By status</h4>
+          <table class="data-table"><thead><tr><th>Status</th><th>Count</th></tr></thead><tbody>
+          {% for s in stats.by_status %}<tr><td>{{ s.status.replace('_', ' ').title() }}</td><td>{{ s.count }}</td></tr>{% endfor %}
+          </tbody></table>
+        </details>
+      </article>
+    </div>
+    <noscript><p class="small muted" style="margin-top:12px">Charts need JavaScript; the tables above carry the same live figures.</p></noscript>
+    <script id="analytics-data" type="application/json">{{ stats|tojson }}</script>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/analytics.js') }}" defer></script>{% endblock %}

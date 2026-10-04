@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="ShareHope connects donors with verified NGOs across eight donation categories." />
+  <title>{% block title %}ShareHope — Good things find their next home{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}" />
+  {% block styles %}<link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}" />{% endblock %}
+  {% block head %}{% endblock %}
+</head>
+<body class="sidebar-collapsed {% block bodyclass %}{% endblock %}">
+  <a class="skip-link" href="#main">Skip to content</a>
+  {% set role = current_user.role if current_user.is_authenticated else none %}
+  {% set p = request.path %}
+
+  <aside class="sidebar" id="sidebar" aria-label="Site">
+    <a class="side-brand" href="/" aria-label="ShareHope home">
+      <span class="brand-name">ShareHope</span><span class="brand-star" aria-hidden="true">*</span>
+      <span class="brand-sub">community&nbsp;ledger</span>
+    </a>
+    <nav class="side-nav" aria-label="Primary">
+      <div class="side-group">Browse</div>
+      <a class="side-link" href="/" {% if p == "/" %}aria-current="page"{% endif %} title="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/></svg><span class="side-label">Home</span></a>
+      <a class="side-link" href="/explore" {% if p == "/explore" %}aria-current="page"{% endif %} title="Explore Donations"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v3M12 17.5v3M3.5 12h3M17.5 12h3"/></svg><span class="side-label">Explore Donations</span></a>
+      <a class="side-link" href="/requirements" {% if p == "/requirements" %}aria-current="page"{% endif %} title="NGO Requirements"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="1.5"/><path d="M9 9.5h6M9 13h6M9 16.5h4"/></svg><span class="side-label">NGO Requirements</span></a>
+
+      <div class="side-group">Dashboards</div>
+      <a class="side-link" href="/donor" {% if p == "/donor" %}aria-current="page"{% endif %} title="Donor Dashboard"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h11a3 3 0 0 1 3 3v12H8a3 3 0 0 1-3-3z"/><path d="M5 4.5v12M9.5 9h5"/></svg><span class="side-label">Donor Dashboard</span>{% if not role %}<span class="lock" aria-hidden="true">◦</span>{% endif %}</a>
+      <a class="side-link" href="/ngo" {% if p == "/ngo" %}aria-current="page"{% endif %} title="NGO Dashboard"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="7" width="16" height="13" rx="1.5"/><path d="M4 10h16M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7"/></svg><span class="side-label">NGO Dashboard</span>{% if not role %}<span class="lock" aria-hidden="true">◦</span>{% endif %}</a>
+      <a class="side-link" href="/tracking" {% if p == "/tracking" %}aria-current="page"{% endif %} title="Donation Tracking"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h7a3 3 0 0 0 0-6H9a3 3 0 0 0 0 6M18 7v3a3 3 0 0 1-3 3h-2"/></svg><span class="side-label">Donation Tracking</span>{% if not role %}<span class="lock" aria-hidden="true">◦</span>{% endif %}</a>
+
+      <div class="side-group">Stay updated</div>
+      <a class="side-link" href="/messages" {% if p == "/messages" %}aria-current="page"{% endif %} title="Messages and Chat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5h16v10H9l-5 4z"/></svg><span class="side-label">Messages &amp; Chat</span>{% if unread_msg_count %}<span class="notif-badge" aria-label="{{ unread_msg_count }} unread messages">{{ unread_msg_count if unread_msg_count < 100 else '99+' }}</span>{% endif %}{% if not role %}<span class="lock" aria-hidden="true">◦</span>{% endif %}</a>
+      <a class="side-link" href="/analytics" {% if p == "/analytics" %}aria-current="page"{% endif %} title="Statistics and Analytics"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M21 20H3"/></svg><span class="side-label">Statistics &amp; Analytics</span></a>
+      <a class="side-link" href="/notifications" {% if p == "/notifications" %}aria-current="page"{% endif %} title="Notifications"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 10a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5h-15S6 14 6 10"/><path d="M10 19a2.2 2.2 0 0 0 4 0"/></svg><span class="side-label">Notifications</span>{% if unread_count %}<span class="notif-badge" aria-label="{{ unread_count }} unread">{{ unread_count if unread_count < 100 else '99+' }}</span>{% endif %}{% if not role %}<span class="lock" aria-hidden="true">◦</span>{% endif %}</a>
+
+      <div class="side-group">Account</div>
+      <a class="side-link" href="/assistant" {% if p == "/assistant" %}aria-current="page"{% endif %} title="AI Chatbot"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.4z"/><path d="M18.5 15.5l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9z"/></svg><span class="side-label">AI Chatbot</span></a>
+      <a class="side-link" href="/profile" {% if p == "/profile" %}aria-current="page"{% endif %} title="Profile and Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg><span class="side-label">Profile &amp; Settings</span>{% if not role %}<span class="lock" aria-hidden="true">◦</span>{% endif %}</a>
+      {% if role == "admin" %}
+      <div class="side-group side-section">Administration</div>
+      <a class="side-link" href="/admin" {% if p == "/admin" %}aria-current="page"{% endif %} title="Admin Dashboard"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7.5 3v5.5c0 4.5-3.2 7.6-7.5 9.5-4.3-1.9-7.5-5-7.5-9.5V6z"/><path d="M9.5 12l2 2 3.5-4"/></svg><span class="side-label">Admin Dashboard</span></a>
+      {% endif %}
+    </nav>
+    <div class="side-foot">
+      {% if current_user.is_authenticated %}
+      <p class="side-user"><span class="side-foot-text">Signed in as</span><strong>{{ current_user.name }} · {{ current_user.role }}</strong></p>
+      <a class="btn btn-outline btn-sm" href="/logout">Log out</a>
+      {% else %}
+      <p class="side-user side-foot-text">◦ = needs login</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-primary btn-sm" href="/login">Log in</a><a class="btn btn-outline btn-sm" href="/register">Join</a></div>
+      {% endif %}
+    </div>
+  </aside>
+  <button class="scrim" id="scrim" hidden aria-label="Close navigation"></button>
+
+  <div class="shell">
+    <div class="topbar">
+      <button class="hamburger" id="navToggle" aria-expanded="false" aria-controls="sidebar">☰ Menu</button>
+      <a href="/" style="text-decoration:none" aria-label="ShareHope home"><span class="brand-name">ShareHope</span><span class="brand-star" aria-hidden="true">*</span></a>
+    </div>
+
+    <div class="meta-bar" role="note">
+      <div class="wrap">
+        <span>Community ledger <span class="dot">●</span> 8 categories · honest placeholders</span>
+        <span>Real accounts · real needs · honest counts</span>
+      </div>
+    </div>
+
+    <main id="main">
+      <div class="wrap">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-stack" role="status" aria-live="polite">
+          {% for category, message in messages %}
+          <p class="flash flash-{{ category }}">{{ message }}</p>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+      </div>
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <div class="footer-grid">
+          <div>
+            <div class="footer-brand">ShareHope<span>*</span></div>
+            <p style="margin-top:12px">A community ledger matching donor offers with verified NGO requirements across eight categories — honestly counted, never inflated.</p>
+          </div>
+          <div class="footer-col">
+            <h4>Platform</h4>
+            <ul>
+              <li><a href="/">Home</a></li>
+              <li><a href="/explore">Explore donations</a></li>
+              <li><a href="/requirements">NGO requirements</a></li>
+              <li><a href="/tracking">Donation tracking</a></li>
+              <li><a href="/analytics">Statistics &amp; analytics</a></li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h4>Accounts</h4>
+            <ul>
+              <li><a href="/donor">Donor dashboard</a></li>
+              <li><a href="/ngo">NGO dashboard</a></li>
+              <li><a href="/messages">Messages &amp; chat</a></li>
+              <li><a href="/notifications">Notifications</a></li>
+              <li><a href="/profile">Profile &amp; settings</a></li>
+              <li><a href="/assistant">AI chatbot</a></li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h4>Trust</h4>
+            <ul>
+              <li><a href="/tracking">Follow a donation</a></li>
+              <li><a href="/register">Offer a donation</a></li>
+              <li><a href="/register?type=ngo">Register your NGO</a></li>
+              <li><a href="/admin">Admin desk</a></li>
+              <li><a href="/login">Log in</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <span>© <span id="year">2026</span> ShareHope · Real accounts, honest placeholders</span>
+          <span>Flask · MySQL · Vanilla JS</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

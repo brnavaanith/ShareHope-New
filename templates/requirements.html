@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}NGO requirements — ShareHope{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboards.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}" />
+{% endblock %}
+
+{% block content %}
+<section class="page">
+  <div class="wrap">
+    <div class="page-head reveal">
+      <div><span class="eyebrow">Browse · NGO needs</span><h1>What NGOs actually need.</h1></div>
+      <p>Filter by category, urgency and place. Open NGO needs appear here with quantities, deadlines and pickup notes.</p>
+    </div>
+
+    <div class="filters reveal" data-filter-root="reqGrid" role="search" aria-label="Filter requirements">
+      <div class="field"><label for="fcat">Category</label><select id="fcat" name="fcat"><option value="">All 8 categories</option>{% for c in categories %}<option value="{{ c.slug }}">{{ c.name }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="fstatus">Urgency</label><select id="fstatus" name="fstatus"><option value="">Any</option><option value="urgent">Urgent</option><option value="soon">Needed soon</option><option value="open">Open</option></select></div>
+      <div class="field"><label for="floc">Location</label><input id="floc" name="floc" type="text" placeholder="e.g. Pune" /></div>
+      <div class="field"><label for="fq">Keyword</label><input id="fq" name="fq" type="search" placeholder="e.g. rice, sweaters" /></div>
+      <button class="btn btn-outline btn-sm" type="button" data-reset>Reset</button>
+    </div>
+
+    {% if requirements %}
+    <div class="card-grid" id="reqGrid">
+      {% for r in requirements %}
+      <article class="d-card {% if r.urgency == 'urgent' %}urgent{% elif r.urgency == 'soon' %}urgent-soon{% endif %}" data-cat="{{ r.category_slug }}" data-loc="{{ r.location }}" data-status="{{ r.urgency }}">
+        <span class="cat-kicker">{{ r.category }} · {{ r.urgency }}</span>
+        <h3><a href="/requirements/{{ r.id }}">{{ r.title }}</a></h3>
+        <dl><dt>Quantity</dt><dd>{{ r.quantity_needed }}</dd><dt>Location</dt><dd>{{ r.location }}</dd><dt>Due</dt><dd>{{ r.deadline }}</dd></dl>
+        <p class="small muted">{{ r.org }}</p>
+        <p><a class="btn btn-outline btn-sm" href="/requirements/{{ r.id }}">View &amp; respond</a></p>
+      </article>
+      {% endfor %}
+    </div>
+    <div class="empty" data-empty><h3>No requirements match.</h3><p>Try widening the filters.</p></div>
+    {% else %}
+    <div class="honest-empty reveal">
+      <span class="tag-placeholder">No open requirements right now</span>
+      <h3>No open requirements to show right now.</h3>
+      <p>Published NGO needs appear here automatically with quantity, urgency and deadline.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><a class="btn btn-primary btn-sm" href="/register?type=ngo">Register your NGO</a><a class="btn btn-outline btn-sm" href="/explore">Explore donations</a></div>
+    </div>
+    {% endif %}
+
+    <div class="integration-note reveal" style="margin-top:18px">NGOs publish and manage needs from the NGO dashboard — including urgency, deadlines and closing fulfilled needs.</div>
+  </div>
+</section>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/dashboards.js') }}" defer></script>{% endblock %}

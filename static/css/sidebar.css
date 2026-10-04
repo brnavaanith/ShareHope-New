@@ -1,0 +1,201 @@
+/* ShareHope sidebar — deep plum nav in the Cream Velvet & Deep Fig identity.
+   Cream labels, coral-apricot active accents. No framework. */
+:root {
+  --sidebar-w: 268px;
+  --sidebar-w-collapsed: 72px;
+  --side-ink: #f3e7dd;
+  --side-dim: rgba(251, 249, 247, 0.55);
+}
+
+.skip-link {
+  position: absolute; left: -999px; top: 0; z-index: 200;
+  background: var(--forest); color: #fff; padding: 10px 16px;
+  border-radius: 0 0 var(--radius-sm) 0; font-weight: 600; font-size: 0.9rem;
+}
+.skip-link:focus { left: 0; }
+
+/* Layout: sidebar fixed, content offset. Width animates on both with one
+   shared curve so rail and content glide together (no lag or overlap). */
+.sidebar {
+  position: fixed; inset: 0 auto 0 0; width: var(--sidebar-w); z-index: 90;
+  background: var(--forest); border-right: 1px solid var(--forest-2);
+  display: flex; flex-direction: column; min-height: 100dvh;
+  overflow-x: hidden;
+  transition: width 280ms var(--ease), transform 280ms var(--ease);
+}
+.shell { margin-left: var(--sidebar-w); min-height: 100dvh; display: flex; flex-direction: column; transition: margin-left 280ms var(--ease); }
+.shell > main { flex: 1; }
+body.sidebar-collapsed .sidebar { width: var(--sidebar-w-collapsed); }
+body.sidebar-collapsed .shell { margin-left: var(--sidebar-w-collapsed); }
+
+/* Collapsible chrome morphs instead of popping: opacity fades while
+   height/padding ease shut, so nothing jumps mid-animation. Visibility
+   flips after the fade (collapse) so focus and tooltips stay sane. */
+.side-group,
+.brand-sub,
+.side-foot-text,
+.side-section,
+.side-foot .side-user,
+.side-foot .btn,
+.side-link .lock {
+  opacity: 1; visibility: visible; max-height: 60px; overflow: hidden;
+  transition: opacity 200ms var(--ease), max-height 280ms var(--ease),
+    padding-top 260ms var(--ease), padding-bottom 260ms var(--ease),
+    margin-top 260ms var(--ease), margin-bottom 260ms var(--ease),
+    visibility 0s linear 200ms;
+}
+body.sidebar-collapsed .side-group,
+body.sidebar-collapsed .brand-sub,
+body.sidebar-collapsed .side-foot-text,
+body.sidebar-collapsed .side-section,
+body.sidebar-collapsed .side-foot .side-user,
+body.sidebar-collapsed .side-foot .btn,
+body.sidebar-collapsed .side-link .lock {
+  opacity: 0; visibility: hidden; max-height: 0;
+  padding-top: 0; padding-bottom: 0; margin-top: 0; margin-bottom: 0;
+}
+body.sidebar-collapsed .side-link { gap: 0; padding: 12px 0 12px 26px; overflow: hidden; }
+body.sidebar-collapsed .notif-badge { margin-left: 0; }
+/* Collapsed rail is 72px with 12px nav gutters: the inline badge would
+   compete with the 19px icon for ~22px of content width and overflow.
+   Float it as a corner dot instead so icons, badges and tooltips never
+   overlap. Layout widths and the 280ms glide are untouched. */
+body.sidebar-collapsed .side-link .notif-badge {
+  flex: none; position: absolute; left: 38px; top: 5px;
+  margin: 0; min-width: 18px; height: 18px; padding: 0 5px;
+  font-size: 0.65rem;
+}
+.side-brand .brand-name {
+  display: inline-block; max-width: 220px; overflow: hidden;
+  white-space: nowrap; opacity: 1; visibility: visible;
+  transition: opacity 200ms var(--ease), max-width 260ms var(--ease),
+    visibility 0s linear 200ms;
+}
+body.sidebar-collapsed .brand-name { max-width: 0; opacity: 0; visibility: hidden; }
+
+.side-brand {
+  display: flex; align-items: baseline; flex-wrap: wrap; row-gap: 0; column-gap: 6px; text-decoration: none;
+  padding: 20px 20px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  min-width: 0;
+  transition: padding 260ms var(--ease);
+}
+.side-brand .brand-name { color: var(--forest-ink); white-space: nowrap; }
+.side-brand .brand-star { color: var(--terra); }
+.side-brand .brand-sub { overflow-wrap: break-word; color: rgba(246, 196, 146, 0.8); }
+body.sidebar-collapsed .side-brand { padding: 20px 0 14px 22px; }
+.side-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 12px 12px 16px; display: grid; gap: 2px; align-content: start; min-width: 0; }
+.side-group {
+  font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--side-dim);
+  padding: 14px 10px 6px;
+}
+.side-link {
+  position: relative;
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; border-radius: var(--radius-sm);
+  text-decoration: none; color: var(--side-ink); font-size: 0.9rem; font-weight: 500;
+  line-height: 1.35;
+  border-left: 3px solid transparent;
+  min-width: 0; max-width: 100%; overflow: hidden;
+  transition: padding 260ms var(--ease), gap 260ms var(--ease),
+    background-color 180ms var(--ease), border-color 180ms var(--ease);
+}
+.side-link .side-label {
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  max-width: 180px; opacity: 1; flex: 0 1 auto;
+  transition: max-width 260ms var(--ease), opacity 200ms var(--ease);
+}
+body.sidebar-collapsed .side-link .side-label {
+  max-width: 0; opacity: 0; flex: 0 0 0; min-width: 0; padding: 0;
+}
+.side-link svg { width: 19px; height: 19px; flex: none; align-self: center; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.side-link:hover { background: rgba(255, 255, 255, 0.08); color: #fff; border-left-color: rgba(246, 196, 146, 0.6); }
+.side-link[aria-current="page"] { background: rgba(227, 122, 92, 0.22); color: #fff; font-weight: 650; border-left-color: var(--terra); }
+.side-link .lock { margin-left: auto; padding-left: 8px; flex: none; font-size: 0.7rem; color: rgba(246, 196, 146, 0.65); }
+/* Live unread count: coral pill, hidden entirely when zero. */
+.notif-badge {
+  margin-left: auto; flex: none; min-width: 22px; height: 22px;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 0 6px; border-radius: 999px;
+  background: var(--terra); color: var(--ink);
+  font-size: 0.72rem; font-weight: 700;
+}
+
+/* Body-level tooltip (JS): never clipped by the scrolling nav. */
+.side-tip {
+  position: fixed; z-index: 200; pointer-events: none;
+  background: var(--ink); color: var(--forest-ink);
+  font-size: 0.8rem; font-weight: 600; white-space: nowrap; max-width: 230px;
+  overflow: hidden; text-overflow: ellipsis;
+  padding: 7px 12px; border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  opacity: 0; transform: translateX(-5px);
+  transition: opacity 180ms var(--ease), transform 180ms var(--ease);
+}
+.side-tip.show { opacity: 1; transform: none; }
+
+.side-foot { border-top: 1px solid rgba(255, 255, 255, 0.12); padding: 12px; display: grid; gap: 8px; min-width: 0; overflow-x: hidden; }
+.side-user { font-size: 0.82rem; color: var(--side-dim); padding: 0 8px; min-width: 0; overflow-wrap: break-word; }
+.side-user strong { color: #fff; display: block; font-size: 0.88rem; overflow-wrap: break-word; }
+.side-foot .btn-outline { color: var(--forest-ink); border-color: rgba(255, 255, 255, 0.3); }
+.side-foot .btn-outline:hover { border-color: var(--terra); background: rgba(255, 255, 255, 0.06); }
+
+/* Mobile topbar (hamburger) — hidden on desktop. */
+.topbar { display: none; }
+.scrim { display: none; }
+/* Touch-expanded sidebar on desktop: tapping the scrim collapses again. */
+.scrim.touch-show {
+  display: block; position: fixed; inset: 0; z-index: 85;
+  background: rgba(36, 24, 26, 0.45); border: 0; padding: 0; cursor: pointer;
+}
+
+@media (max-width: 960px) {
+  .sidebar { transform: translateX(-102%); width: min(var(--sidebar-w), 86vw); box-shadow: var(--shadow-md); }
+  .sidebar.open { transform: none; }
+  .shell, body.sidebar-collapsed .shell { margin-left: 0; }
+  body.sidebar-collapsed .sidebar { width: min(var(--sidebar-w), 86vw); }
+  /* Drawer always shows full chrome: undo the collapsed morph. */
+  body.sidebar-collapsed .side-label, body.sidebar-collapsed .brand-name,
+  body.sidebar-collapsed .brand-sub, body.sidebar-collapsed .side-group,
+  body.sidebar-collapsed .side-foot-text, body.sidebar-collapsed .side-section {
+    opacity: 1; visibility: visible; max-height: none; max-width: none;
+    padding-top: revert; padding-bottom: revert;
+    margin-top: revert; margin-bottom: revert;
+  }
+  body.sidebar-collapsed .side-foot .btn { opacity: 1; visibility: visible; max-height: none; display: inline-flex; }
+  body.sidebar-collapsed .side-foot .side-user { opacity: 1; visibility: visible; max-height: none; display: block; }
+  body.sidebar-collapsed .side-link .lock { opacity: 1; visibility: visible; max-height: none; display: inline; }
+  body.sidebar-collapsed .side-link .side-label { max-width: 180px; opacity: 1; }
+  body.sidebar-collapsed .side-link { gap: 12px; padding: 10px 12px; }
+  body.sidebar-collapsed .side-brand { padding: 20px 20px 14px; }
+  .topbar {
+    display: flex; align-items: center; gap: 12px;
+    position: sticky; top: 0; z-index: 80;
+    background: color-mix(in srgb, var(--paper) 93%, white);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+    padding: 10px 16px;
+  }
+  .topbar .brand-name { font-family: var(--font-display); font-weight: 650; font-size: 1.25rem; color: var(--forest); }
+  .topbar .brand-star { color: var(--terra); }
+  .hamburger {
+    background: none; border: 1px solid var(--line-strong); border-radius: var(--radius-sm);
+    padding: 9px 12px; font-weight: 700; color: var(--forest); font-size: 0.9rem; cursor: pointer;
+  }
+  .hamburger:hover { border-color: var(--forest); }
+  .scrim {
+    display: block; position: fixed; inset: 0; z-index: 85;
+    background: rgba(36, 24, 26, 0.45); border: 0; padding: 0; cursor: pointer;
+  }
+  .scrim[hidden] { display: none; }
+}
+
+/* Reduced motion: rail snaps instantly, no glide. */
+@media (prefers-reduced-motion: reduce) {
+  .sidebar, .shell, .side-link, .side-link .side-label,
+  .side-brand .brand-name, .side-group, .brand-sub,
+  .side-foot-text, .side-section, .side-foot .side-user,
+  .side-foot .btn, .side-link .lock, .side-tip {
+    transition: none !important;
+  }
+}

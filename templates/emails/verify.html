@@ -1,0 +1,15 @@
+<!doctype html>
+<html><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /></head>
+<body style="margin:0;padding:0;background:#fbf9f7;font-family:Inter,-apple-system,Segoe UI,Roboto,sans-serif;color:#24181a;">
+  <div style="max-width:600px;margin:0 auto;padding:24px;">
+    <div style="background:#4a2e35;color:#fbf9f7;border-radius:6px 6px 0 0;padding:20px 24px;">
+      <div style="font-family:Fraunces,Georgia,serif;font-size:22px;">ShareHope<span style="color:#f6c492;">*</span></div>
+    </div>
+    <div style="background:#ffffff;border:1px solid #e9dcd2;border-top:0;border-radius:0 0 6px 6px;padding:24px;">
+      <h1 style="font-family:Fraunces,Georgia,serif;font-size:22px;color:#38222a;margin:0 0 12px;">Verify your email</h1>
+      <p style="font-size:14px;line-height:1.6;">Hi {{ user.name }}, confirm <strong>{{ user.email }}</strong> belongs to you. The link expires in 24 hours and works only once.</p>
+      <p><a href="{{ link }}" style="display:inline-block;background:#e37a5c;color:#fff;text-decoration:none;padding:10px 18px;border-radius:3px;font-size:14px;">Verify email</a></p>
+      <p style="font-size:12px;color:#756367;">If the button fails, paste this link:<br /><span style="word-break:break-all;">{{ link }}</span></p>
+    </div>
+  </div>
+</body></html>

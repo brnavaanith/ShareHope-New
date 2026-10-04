@@ -1,0 +1,48 @@
+/* Auth — editorial split: ledger note left, form right. */
+.auth-section { padding: 48px 0 72px; min-width: 0; }
+.auth-grid { display: grid; grid-template-columns: 5fr 6fr; gap: 40px; align-items: start; }
+.auth-grid > * { min-width: 0; }
+.auth-aside h1 { margin: 14px 0 12px; font-size: clamp(2rem, 4vw, 3rem); }
+.auth-aside .lede { font-size: 1.05rem; }
+.auth-points { list-style: none; padding: 0; margin: 22px 0 0; display: grid; gap: 12px; border-top: 1px solid var(--line); padding-top: 20px; }
+.auth-points li { display: flex; gap: 10px; font-size: 0.94rem; color: var(--ink-soft); }
+.auth-points .tick { color: var(--terra-deep); font-weight: 800; }
+.auth-demo { margin-top: 22px; border: 1px dashed var(--line-strong); border-radius: var(--radius-md); padding: 14px 16px; background: var(--card); font-size: 0.88rem; color: var(--muted); }
+.auth-demo .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+
+.form-card { background: var(--card); border: 1px solid var(--line-strong); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); padding: 30px; min-width: 0; overflow-wrap: break-word; }
+.form-card h2 { font-size: 1.6rem; margin-bottom: 6px; }
+.form-sub { color: var(--muted); font-size: 0.94rem; margin-bottom: 20px; }
+.field { display: grid; gap: 6px; margin-bottom: 14px; min-width: 0; }
+.field label { font-weight: 600; font-size: 0.9rem; color: var(--forest-2); overflow-wrap: break-word; }
+.field .hint { font-weight: 400; font-size: 0.82rem; color: var(--muted); }
+.field input, .field select, .field textarea {
+  font: inherit; padding: 11px 12px; border: 1.5px solid var(--line-strong);
+  border-radius: var(--radius-sm); background: #fff; color: var(--ink); width: 100%; max-width: 100%; min-width: 0;
+}
+.field textarea { min-height: 88px; resize: vertical; }
+.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--forest); box-shadow: 0 0 0 3px rgba(26,60,52,0.12); }
+.field [aria-invalid="true"] { border-color: var(--terra); }
+.field-error { font-size: 0.82rem; color: var(--terra-deep); min-height: 1.1em; }
+.role-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.role-pick label { border: 1.5px solid var(--line-strong); border-radius: var(--radius-sm); padding: 12px; cursor: pointer; display: grid; gap: 2px; min-width: 0; overflow-wrap: break-word; }
+.role-pick input { accent-color: var(--forest); }
+.role-pick label:has(input:checked) { border-color: var(--forest); background: #fbe9db; }
+.role-pick strong { color: var(--forest-2); }
+.role-pick span { font-size: 0.82rem; color: var(--muted); }
+.ngo-only { display: none; border-top: 1px dashed var(--line-strong); margin-top: 6px; padding-top: 16px; }
+.ngo-only.show { display: block; }
+.form-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 18px; }
+.form-actions .btn { min-width: 160px; }
+.form-actions .btn[disabled] { opacity: 0.6; cursor: progress; }
+.form-foot { margin-top: 16px; font-size: 0.88rem; color: var(--muted); }
+.form-foot a { color: var(--forest); font-weight: 600; }
+
+@media (max-width: 960px) {
+  .auth-grid { grid-template-columns: 1fr; }
+  .form-card { padding: 22px; }
+}
+@media (max-width: 520px) {
+  .role-pick { grid-template-columns: 1fr; }
+  .form-actions .btn { min-width: 0; width: 100%; }
+}

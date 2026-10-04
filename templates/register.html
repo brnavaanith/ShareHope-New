@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Create account — ShareHope{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}" />
+{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+  <div class="wrap auth-grid">
+    <div class="auth-aside">
+      <span class="eyebrow">Join the ledger</span>
+      <h1>Two doors.<br />One <em class="accent">honest record.</em></h1>
+      <p class="lede">Donors offer. NGOs request. Choose your door now — you can’t be both on one email, which keeps the ledger clean.</p>
+      <ul class="auth-points">
+        <li><span class="tick">✓</span> Donor: name, city, what you can give.</li>
+        <li><span class="tick">✓</span> NGO: organisation, registration ID, pickup area.</li>
+        <li><span class="tick">✓</span> Admin accounts are seeded, never self-registered.</li>
+      </ul>
+    </div>
+
+    <div class="form-card">
+      <h2>Create your account</h2>
+      <p class="form-sub">Your account is stored securely — passwords are hashed and emails must be unique.</p>
+      {# Same reason as login.html: browsers restore the previous submission
+         (including passwords) on a revisit or back/forward navigation.
+         Non-sensitive fields echoed back after a failed signup are kept
+         by auth.js because they carry a value attribute. #}
+      <form method="post" action="/register" data-auth-form data-clear-on-load autocomplete="off" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="field">
+          <label>Account type</label>
+          <div class="role-pick" role="radiogroup" aria-label="Account type">
+            <label><input type="radio" name="role" value="donor" {% if role != 'ngo' %}checked{% endif %} /> <strong>Donor</strong><span>Offer goods across 8 categories</span></label>
+            <label><input type="radio" name="role" value="ngo" {% if role == 'ngo' %}checked{% endif %} /> <strong>NGO</strong><span>Publish requirements</span></label>
+          </div>
+        </div>
+        <div class="field">
+          <label for="name">Full name</label>
+          <input id="name" name="name" type="text" autocomplete="name" required placeholder="Asha Rao" value="{{ name or '' }}" />
+          <span class="field-error" aria-live="polite"></span>
+        </div>
+        <div class="field">
+          <label for="email">Email address</label>
+          <input id="email" name="email" type="email" autocomplete="email" required placeholder="you@example.org" value="{{ email or '' }}" />
+          <span class="field-error" aria-live="polite"></span>
+        </div>
+        <div class="field">
+          <label for="city">City / locality</label>
+          <input id="city" name="city" type="text" autocomplete="address-level2" required placeholder="e.g. Kothrud, Pune" value="{{ city or '' }}" />
+          <span class="field-error" aria-live="polite"></span>
+        </div>
+        <div id="ngoFields" class="ngo-only">
+          <div class="field">
+            <label for="org">Organisation name</label>
+            <input id="org" name="org" type="text" data-ngo-required placeholder="Bright Futures Trust" value="{{ org or '' }}" />
+            <span class="field-error" aria-live="polite"></span>
+          </div>
+          <div class="field">
+            <label for="regid">Registration ID <span class="hint">— verified by an admin</span></label>
+            <input id="regid" name="regid" type="text" data-ngo-required placeholder="e.g. MH/2019/0421" value="{{ regid or '' }}" />
+            <span class="field-error" aria-live="polite"></span>
+          </div>
+        </div>
+        <div class="field">
+          <label for="password">Password <span class="hint">— min. 8 characters</span></label>
+          <input id="password" name="password" type="password" autocomplete="new-password" required minlength="8" placeholder="Choose carefully" />
+          <span class="field-error" aria-live="polite"></span>
+        </div>
+        <div class="field">
+          <label for="confirm">Confirm password</label>
+          <input id="confirm" name="confirm" type="password" autocomplete="new-password" required placeholder="Repeat it" />
+          <span class="field-error" aria-live="polite"></span>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" type="submit">Create account</button>
+          <a class="btn btn-outline" href="/login">I have an account</a>
+        </div>
+      </form>
+      <p class="form-foot">By continuing you agree to honest listings. A welcome and verification email are sent after you sign up.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/auth.js') }}" defer></script>
+{% endblock %}

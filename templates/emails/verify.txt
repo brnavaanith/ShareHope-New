@@ -1,0 +1,8 @@
+Hi {{ user.name }},
+
+Please verify that {{ user.email }} belongs to you.
+This link expires in 24 hours and works only once:
+
+{{ link }}
+
+— The ShareHope ledger

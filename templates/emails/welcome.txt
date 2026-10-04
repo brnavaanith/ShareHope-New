@@ -1,0 +1,7 @@
+Welcome to ShareHope, {{ user.name }}!
+
+Your {{ user.role }} account is ready.
+{% if user.role == 'donor' %}Post your first offer and matching NGOs will be notified.{% elif user.role == 'ngo' %}Publish your first requirement and matching donors will be notified.{% endif %}
+Please verify your email so password resets and handover news always reach you.
+
+— The ShareHope ledger

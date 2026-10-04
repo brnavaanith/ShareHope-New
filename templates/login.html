@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Log in — ShareHope{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}" />
+{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+  <div class="wrap auth-grid">
+    <div class="auth-aside">
+      <span class="eyebrow">Welcome back</span>
+      <h1>Pick up where<br />your ledger <em class="accent">left off.</em></h1>
+      <p class="lede">One login for donors and NGOs. Your offers, requirements and handover trail are exactly where you left them.</p>
+      <ul class="auth-points">
+        <li><span class="tick">✓</span> Donors see offers by status — pending, accepted, handed over.</li>
+        <li><span class="tick">✓</span> NGOs land in their incoming-offer inbox.</li>
+        <li><span class="tick">✓</span> Admins are routed to the moderation desk.</li>
+      </ul>
+      <div class="auth-demo">
+        <strong>Real accounts, securely stored.</strong> Passwords are hashed — never stored or sent in plain text. Admin accounts are created by existing admins, never self-registered.
+        <div class="row">
+          <a class="btn btn-outline btn-sm" href="/register">Create donor account</a>
+          <a class="btn btn-outline btn-sm" href="/register?type=ngo">Register your NGO</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <h2>Log in</h2>
+      <p class="form-sub">One login for donors, NGOs and admins — you land on your own dashboard.</p>
+      {# autocomplete="off" on the form + blank fields: browsers otherwise
+         restore the previous submission (including the password) on a
+         fresh visit or a back/forward navigation, regardless of
+         no-store. auth.js additionally clears these on load and on
+         pageshow. The email value is only echoed back after a failed
+         login, which is the useful-validation case. #}
+      <form method="post" action="/login" data-auth-form data-clear-on-load autocomplete="off" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <input type="hidden" name="next" value="{{ next or '' }}" />
+        <div class="field">
+          <label for="email">Email address</label>
+          <input id="email" name="email" type="email" autocomplete="off" required placeholder="you@example.org" value="{{ email or '' }}" />
+          <span class="field-error" aria-live="polite"></span>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" autocomplete="off" required minlength="8" placeholder="••••••••" />
+          <span class="field-error" aria-live="polite"></span>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" type="submit">Log in</button>
+          <span class="small muted"><a href="/forgot-password">Forgot password?</a></span>
+        </div>
+      </form>
+      <p class="form-foot">New to ShareHope? <a href="/register">Create an account</a> · <a href="/">Back home</a></p>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/auth.js') }}" defer></script>
+{% endblock %}

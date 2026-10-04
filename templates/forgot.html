@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Forgot password — ShareHope{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}" />
+{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+  <div class="wrap auth-grid">
+    <div class="auth-aside">
+      <span class="eyebrow">Locked out?</span>
+      <h1>Reset your<br /><em class="accent">password.</em></h1>
+      <p class="lede">Enter your account email. If it exists, a single-use link valid for 1 hour is on its way.</p>
+    </div>
+    <div class="form-card">
+      <h2>Forgot password</h2>
+      <p class="form-sub">We never reveal whether an address is registered — the message is always the same.</p>
+      <form method="post" action="/forgot-password" data-auth-form novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="field">
+          <label for="email">Email address</label>
+          <input id="email" name="email" type="email" autocomplete="email" required placeholder="you@example.org" value="{{ email or '' }}" />
+          <span class="field-error" aria-live="polite"></span>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" type="submit">Send reset link</button>
+          <a class="btn btn-outline" href="/login">Back to log in</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/auth.js') }}" defer></script>
+{% endblock %}

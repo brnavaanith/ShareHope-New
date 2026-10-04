@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}AI Chatbot — ShareHope{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}" />{% endblock %}
+
+{% block content %}
+<section class="page">
+  <div class="wrap">
+    <div class="page-head reveal">
+      <div><span class="eyebrow">Assistant · ShareHope guide</span><h1>Ask ShareHope.</h1></div>
+      <p>How donations, requirements, tracking, messages and notifications work — answered from the same verified pages you can open yourself. History stays in this browser only.</p>
+    </div>
+
+    <div class="msg-grid">
+      <div class="thread-view reveal" aria-label="Assistant conversation" aria-live="polite">
+        {% if not ai_available %}
+        <div class="integration-note" role="note">Built-in guide active — live AI is not configured. Answers come from ShareHope's own help text, never invented listings.</div>
+        {% endif %}
+        <div id="botThread">
+          {% if history %}
+            {% for m in history %}
+              {% if m.role == 'user' %}
+              <div class="bubble me" data-chat="user"><strong>You</strong><br />{{ m.content }}</div>
+              {% else %}
+              <div class="bubble them" data-chat="assistant"><strong>Assistant</strong><br />{{ m.content }}</div>
+              {% endif %}
+            {% endfor %}
+          {% else %}
+            <h3>How can I help?</h3>
+            <div class="bubble them"><strong>Assistant</strong><br />Ask how to post an offer, publish a need, track a donation, or find your way around — e.g. “where is tracking?”</div>
+          {% endif %}
+        </div>
+        <p class="small" id="botTyping" hidden aria-live="polite"><span class="small muted">Assistant is thinking…</span></p>
+        <p class="small" id="botError" role="alert" hidden style="color:var(--terra-deep)">Could not reach the assistant — your question is kept above; try again.</p>
+        <form class="composer" id="botComposer" method="post" action="/assistant/ask" aria-label="Assistant composer">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <label class="small muted" for="botbox" style="align-self:center">Ask</label>
+          <input id="botbox" name="message" type="text" required maxlength="2000" placeholder="e.g. How do I post an offer?" autocomplete="off" />
+          <button class="btn btn-primary btn-sm" id="botSendBtn" type="submit">Send</button>
+        </form>
+        <form method="post" action="/assistant/clear" aria-label="Start a new chat" style="margin-top:8px">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <button class="btn btn-outline btn-sm" type="submit">New chat</button>
+        </form>
+      </div>
+      <div class="reveal">
+        <div class="honest-empty" style="text-align:left;justify-items:start">
+          <h3>Try asking</h3>
+          <div style="display:flex;gap:8px;flex-wrap:wrap" role="group" aria-label="Suggested questions">
+            <button class="btn btn-outline btn-sm" type="button" data-suggest="How do I post a donation offer?">Post an offer?</button>
+            <button class="btn btn-outline btn-sm" type="button" data-suggest="Where is donation tracking?">Tracking?</button>
+            <button class="btn btn-outline btn-sm" type="button" data-suggest="How do messages work?">Messages?</button>
+          </div>
+          <p class="small muted" style="margin-top:10px">Short, specific questions get the best answers. The assistant explains ShareHope — it cannot change donations, accounts, or records.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-outline btn-sm" href="/tracking">Tracking</a><a class="btn btn-outline btn-sm" href="/analytics">Analytics</a><a class="btn btn-outline btn-sm" href="/explore">Explore</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/assistant.js') }}" defer></script>{% endblock %}

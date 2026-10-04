@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Admin dashboard — ShareHope{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboards.css') }}" />{% endblock %}
+
+{% block content %}
+<section class="dash">
+  <div class="wrap">
+    <div class="dash-top">
+      <div><span class="eyebrow">Admin · audit desk</span><h1>Keep the ledger honest.</h1>
+      <p>Live counts and recent records, straight from the database. NGO verification tooling arrives with the moderation stage.</p></div>
+      <a class="btn btn-outline btn-sm" href="/logout">Log out</a>
+    </div>
+    <nav class="dash-nav" aria-label="Admin sections"><a href="/admin" aria-current="page">Queues</a><a href="/explore">Donations</a><a href="/requirements">Needs</a><a href="/logout">Log out</a></nav>
+
+    <div class="panel" style="margin-bottom:16px">
+      <h3>Featured Home-page slip</h3>
+      <p class="sub">The Home page shows only the slip you pick here — never a random donation.</p>
+      {% if featured_offer %}
+      <div class="offer" style="margin-top:10px">
+        <div class="offer-head"><h4>{{ featured_offer.title }}</h4><span class="pill pill-{{ featured_offer.status }}">{{ featured_offer.status.replace('_', ' ').title() }}</span></div>
+        <p class="small muted">{{ featured_offer.donor.name if featured_offer.donor else '—' }} · {{ featured_offer.quantity or '—' }} · {{ featured_offer.location or '—' }}</p>
+        <div class="row-actions">
+          <span class="tag-live tag-placeholder">Currently on the Home page</span>
+          <form method="post" action="/admin/featured-slip" style="display:inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <input type="hidden" name="action" value="clear" />
+            <button class="btn-mini danger" type="submit">Remove from Home</button>
+          </form>
+        </div>
+      </div>
+      {% else %}
+      <div class="honest-empty" style="border:1px dashed var(--line-strong);border-radius:var(--radius-md);padding:22px;text-align:center;background:var(--card)">
+        <span class="tag-placeholder">Nothing featured</span>
+        <h3>The Home page shows its empty state.</h3>
+        <p class="small muted">Pick a donation below to put a real slip on the front page.</p>
+      </div>
+      {% endif %}
+
+      {% if featureable %}
+      <div class="table-wrap" style="margin-top:12px">
+        <table class="ledger" aria-label="Choose the featured donation">
+          <thead><tr><th>Donation</th><th>Status</th><th>Feature</th></tr></thead>
+          <tbody>
+            {% for o in featureable %}
+            <tr>
+              <td><span class="row-title">{{ o.title }}</span><br /><span class="row-sub">{{ o.donor.name if o.donor else '—' }} · {{ o.category|replace('_', ' ')|title }} · {{ o.location or '—' }}</span></td>
+              <td><span class="pill pill-{{ o.status }}">{{ o.status.replace('_', ' ').title() }}</span></td>
+              <td>
+                {% if featured_offer and featured_offer.id == o.id %}
+                <span class="small muted">Featured</span>
+                {% else %}
+                <form method="post" action="/admin/featured-slip">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                  <input type="hidden" name="action" value="feature" />
+                  <input type="hidden" name="offer_id" value="{{ o.id }}" />
+                  <button class="btn-mini primary" type="submit">{% if featured_offer %}Replace with this{% else %}Feature on Home{% endif %}</button>
+                </form>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="small muted" style="margin-top:12px">No eligible donations yet. Withdrawn offers cannot be featured; post an offer first.</p>
+      {% endif %}
+    </div>
+
+    <div class="audit-line" aria-label="Platform summary">
+      <div><div class="k">Registered users ({{ counts.ngos }} NGOs)</div><div class="v">{{ counts.users }}</div></div>
+      <div><div class="k">Pending offers</div><div class="v">{{ counts.pending_offers }}</div></div>
+      <div><div class="k">Accepted handovers in flight</div><div class="v">{{ counts.accepted }}</div></div>
+      <div><div class="k">Completed · open needs</div><div class="v">{{ counts.handed_over }} · {{ counts.open_reqs }}</div></div>
+    </div>
+
+    <div class="filters" data-filter-root="modTable">
+      <div class="field"><label for="fcat">Category</label><select id="fcat" name="fcat"><option value="">All</option>{% for c in categories %}<option value="{{ c.slug }}">{{ c.name }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="fstatus">Status</label><select id="fstatus" name="fstatus"><option value="">All</option><option value="pending">Pending</option><option value="accepted">Accepted</option><option value="handed_over">Handed over</option><option value="declined">Declined</option><option value="open">Open need</option></select></div>
+      <div class="field"><label for="fq">Search</label><input id="fq" name="fq" type="search" placeholder="user, org, title" /></div>
+      <button class="btn btn-outline btn-sm" type="button" data-reset>Reset</button>
+    </div>
+
+    <div class="admin-grid">
+      <div class="table-wrap">
+        <table class="ledger" aria-label="Recent users">
+          <thead><tr><th>Account</th><th>Role</th><th>Joined</th></tr></thead>
+          <tbody id="modTable">
+            {% for u in users %}
+            <tr data-cat="" data-loc="{{ u.city or '' }}" data-status="{{ u.role }}"><td><span class="row-title">{{ u.name }}</span><br /><span class="row-sub">{{ u.email }}{% if u.org_name %} · {{ u.org_name }}{% endif %}</span></td><td>{{ u.role.title() }}</td><td><span class="row-sub">{{ u.created_at.strftime('%d %b %Y') }}</span></td></tr>
+            {% else %}
+            <tr><td colspan="3"><span class="row-sub">No accounts yet.</span></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="empty" data-empty><h3>Nothing matches those filters.</h3><p>Try widening the search.</p></div>
+
+      <div class="table-wrap">
+        <table class="ledger" aria-label="Donation oversight">
+          <thead><tr><th>Donation</th><th>Route</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for o in offers %}
+            <tr data-cat="{{ o.category }}" data-loc="{{ o.location or '' }}" data-status="{{ o.status }}"><td><span class="row-title">{{ o.title }}</span><br /><span class="row-sub">{{ o.donor.name if o.donor else '—' }} · {{ o.location or '—' }}</span></td><td>Slip № {{ o.id }}</td><td><span class="pill pill-{{ o.status }}">{{ o.status.replace('_', ' ').title() }}</span></td></tr>
+            {% else %}
+            <tr><td colspan="3"><span class="row-sub">No donations posted yet.</span></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-wrap">
+        <table class="ledger" aria-label="Matching activity">
+          <thead><tr><th>Link</th><th>Acceptance</th><th>Handover</th></tr></thead>
+          <tbody>
+            {% for t in links %}
+            <tr><td><span class="row-title">{{ t.offer.title if t.offer else 'Removed offer' }}</span><br /><span class="row-sub">→ {{ t.requirement.title if t.requirement else '—' }}</span></td><td>{{ t.acceptance_status.replace('_', ' ').title() }}</td><td>{{ t.handover_status.replace('_', ' ').title() }}</td></tr>
+            {% else %}
+            <tr><td colspan="3"><span class="row-sub">No matches yet.</span></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/dashboards.js') }}" defer></script>{% endblock %}

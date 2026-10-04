@@ -1,0 +1,8 @@
+{{ title }}
+
+Hi {{ user.name }},
+{{ status_line }}
+{% if detail %}{{ detail }}{% endif %}
+
+Open ShareHope → Tracking to see the full trail.
+— The ShareHope ledger

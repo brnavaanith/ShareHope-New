@@ -1,0 +1,8 @@
+Hi {{ user.name }},
+
+Someone requested a password reset for {{ user.email }}.
+This link expires in 1 hour and works only once. If it was not you, ignore this email:
+
+{{ link }}
+
+— The ShareHope ledger

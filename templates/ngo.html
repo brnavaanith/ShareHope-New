@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}NGO dashboard — ShareHope{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboards.css') }}" />{% endblock %}
+
+{% block content %}
+<section class="dash">
+  <div class="wrap">
+    <div class="dash-top">
+      <div><span class="eyebrow">NGO · inbox view</span><h1>Needs out, offers in.</h1>
+      <p>{{ current_user.org_name or current_user.name }}{% if current_user.city %} · {{ current_user.city }}{% endif %} — requirements on the left, matching donor offers on the right.</p></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-primary btn-sm" href="/requirements/new">+ Publish requirement</a><a class="btn btn-outline btn-sm" href="/explore">All offers</a></div>
+    </div>
+    <nav class="dash-nav" aria-label="NGO sections"><a href="/ngo" aria-current="page">Inbox</a><a href="/explore">All offers</a><a href="/requirements">Needs board</a><a href="/messages">Messages</a><a href="/logout">Log out</a></nav>
+
+    <div class="filters" data-filter-root="offerQueue">
+      <div class="field"><label for="fcat">Category</label><select id="fcat" name="fcat"><option value="">All</option>{% for c in categories %}<option value="{{ c.slug }}">{{ c.name }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="fstatus">Urgency</label><select id="fstatus" name="fstatus"><option value="">All</option><option value="urgent">Urgent</option><option value="soon">Needed soon</option><option value="open">Open</option></select></div>
+      <div class="field"><label for="floc">Location contains</label><input id="floc" name="floc" type="text" placeholder="e.g. Pune" /></div>
+      <button class="btn btn-outline btn-sm" type="button" data-reset>Reset</button>
+    </div>
+
+    <div class="ngo-grid">
+      <div>
+        <div class="panel" style="margin-bottom:16px"><h3>Published requirements</h3><p class="sub">Close or fulfil a need when it is met; reopen a closed one any time.</p>
+          {% if reqs %}
+          <div class="table-wrap"><table class="ledger">
+            <thead><tr><th>Need</th><th>Urgency</th><th>Status</th><th>Manage</th></tr></thead>
+            <tbody>
+              {% for r in reqs %}
+              <tr>
+                <td><span class="row-title">{{ r.title }}</span><br /><span class="row-sub">{{ r.required_quantity or '—' }} · {{ r.location or '—' }}{% if r.deadline %} · due {{ r.deadline.strftime('%d %b %Y') }}{% endif %}</span></td>
+                <td><span class="pill {% if r.urgency == 'open' %}pill-open{% else %}pill-pending{% endif %}">{{ r.urgency.title() }}</span></td>
+                <td><span class="pill {% if r.status == 'open' %}pill-open{% elif r.status == 'fulfilled' %}pill-handed_over{% else %}pill-declined{% endif %}">{{ r.status.title() }}</span></td>
+                <td><div class="row-actions">
+                  {% if r.status == 'open' %}
+                  <a class="btn-mini" href="/requirements/{{ r.id }}/edit">Edit</a>
+                  <form method="post" action="/requirements/{{ r.id }}/status" style="display:inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}" /><input type="hidden" name="to" value="fulfilled" /><button class="btn-mini primary" type="submit">Fulfilled</button></form>
+                  <form method="post" action="/requirements/{{ r.id }}/status" style="display:inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}" /><input type="hidden" name="to" value="closed" /><button class="btn-mini danger" type="submit">Close</button></form>
+                  {% elif r.status == 'closed' %}
+                  <form method="post" action="/requirements/{{ r.id }}/status" style="display:inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}" /><input type="hidden" name="to" value="open" /><button class="btn-mini" type="submit">Reopen</button></form>
+                  {% else %}
+                  <span class="small muted">Done</span>
+                  {% endif %}
+                </div></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table></div>
+          {% else %}
+          <p class="small muted">No requirements yet — publish your first need to start receiving matched offers.</p>
+          {% endif %}
+        </div>
+
+        {% if awaiting %}
+        <div class="panel" style="margin-bottom:16px"><h3>Awaiting your decision</h3><p class="sub">Linked offers reserved for your review — accept or decline.</p>
+          {% for t in awaiting %}
+          <div class="offer" style="margin-top:10px">
+            <div class="offer-head"><h4>{{ t.offer.title if t.offer else 'Removed offer' }}</h4><span class="pill pill-pending">Pending</span></div>
+            <p class="small muted">For “{{ t.requirement.title }}” · {{ t.offer.donor.name if t.offer and t.offer.donor else '—' }} · {{ t.offer.location if t.offer else '—' }}</p>
+            <div class="row-actions">
+              <form method="post" action="/tracking/{{ t.id }}/accept" style="display:inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}" /><button class="btn-mini primary" type="submit">Accept</button></form>
+              <form method="post" action="/tracking/{{ t.id }}/decline" style="display:inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}" /><button class="btn-mini danger" type="submit">Decline</button></form>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if active %}
+        <div class="panel"><h3>Handovers in progress</h3><p class="sub">Confirm receipt once goods arrive to complete the record.</p>
+          {% for t in active %}
+          <div class="offer" style="margin-top:10px">
+            <div class="offer-head"><h4>{{ t.offer.title if t.offer else 'Removed offer' }}</h4><span class="pill pill-accepted">Accepted</span></div>
+            <p class="small muted">For “{{ t.requirement.title }}” · handover: {{ t.handover_status.replace('_', ' ') }}</p>
+            <div class="row-actions">
+              {% if t.handover_status == 'handed_over' and t.offer and t.offer.status == 'accepted' %}
+              <form method="post" action="/tracking/{{ t.id }}/complete" style="display:inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}" /><button class="btn-mini primary" type="submit">Confirm receipt &amp; complete</button></form>
+              {% else %}
+              <span class="small muted">Waiting for the donor to mark handover.</span>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% if completed %}
+        <div class="panel" style="margin-top:16px"><h3>Completed handovers</h3><p class="sub">Receipt confirmed — counted in the impact ledger.</p>
+          {% for t in completed %}
+          <div class="offer" style="margin-top:10px">
+            <div class="offer-head"><h4>{{ t.offer.title if t.offer else 'Removed offer' }}</h4><span class="pill pill-handed_over">Completed</span></div>
+            <p class="small muted">For “{{ t.requirement.title }}” · Handover completed and counted.</p>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+
+      <div>
+        <div class="panel"><h3>Matching offers</h3><p class="sub">Pending offers in your categories and places. Accept or decline for one of your open requirements.</p></div>
+        <div id="offerQueue" style="margin-top:12px">
+          {% if not open_reqs %}
+          <div class="honest-empty" style="border:1px dashed var(--line-strong);border-radius:var(--radius-md);padding:22px;text-align:center;background:var(--card)"><h3>Publish a requirement first.</h3><p class="small muted">Matches appear once you describe what you need.</p></div>
+          {% elif not matched and not other %}
+          <div class="honest-empty" style="border:1px dashed var(--line-strong);border-radius:var(--radius-md);padding:22px;text-align:center;background:var(--card)"><h3>No pending offers right now.</h3><p class="small muted">New donor offers appear here automatically.</p></div>
+          {% endif %}
+          {% for m in matched %}
+          <article class="offer" data-cat="{{ m.offer.category }}" data-loc="{{ m.offer.location or '' }}" data-status="{{ m.reqs[0].urgency }}">
+            <div class="offer-head"><h4>{{ m.offer.title }}</h4><span class="pill pill-pending">Pending</span></div>
+            <p>{{ m.donor.name if m.donor else 'A donor' }}{% if m.donor and m.donor.city %} · {{ m.donor.city }}{% endif %} · {{ m.offer.quantity or '—' }} · {{ m.offer.location or '—' }}</p>
+            <p class="small muted">Matches: {{ m.reqs | map(attribute='title') | join('; ') }}</p>
+            <form method="post" action="/offers/{{ m.offer.id }}/decide">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+              <div class="field" style="margin-bottom:8px"><label for="req-{{ m.offer.id }}">Decide for requirement</label>
+                <select id="req-{{ m.offer.id }}" name="requirement_id" required>
+                  {% for r in m.reqs %}<option value="{{ r.id }}">{{ r.title }}</option>{% endfor %}
+                </select>
+              </div>
+              <div class="row-actions">
+                <button class="btn-mini primary" type="submit" name="action" value="accept">Accept</button>
+                <button class="btn-mini danger" type="submit" name="action" value="decline">Decline</button>
+              </div>
+            </form>
+          </article>
+          {% endfor %}
+        </div>
+        <div class="empty" data-empty><h3>Inbox zero for these filters.</h3><p>Widen the location or category to see more offers.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/dashboards.js') }}" defer></script>{% endblock %}

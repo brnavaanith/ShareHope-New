@@ -1,0 +1,7 @@
+Hi {{ user.name }},
+
+New message from {{ sender.name }}:
+“{{ snippet }}”
+
+Open ShareHope → Messages to reply. Full text stays in your inbox.
+— The ShareHope ledger

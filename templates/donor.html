@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Donor dashboard — ShareHope{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboards.css') }}" />{% endblock %}
+
+{% block content %}
+<section class="dash">
+  <div class="wrap">
+    <div class="dash-top">
+      <div><span class="eyebrow">Donor · journal view</span><h1>Your giving, in order.</h1>
+      <p>Hello {{ current_user.name }} — newest first, with a plain-English status on each line.</p></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-primary btn-sm" href="/offers/new">+ New offer</a><a class="btn btn-outline btn-sm" href="/tracking">Track donations</a></div>
+    </div>
+    <nav class="dash-nav" aria-label="Donor sections"><a href="/donor" aria-current="page">Journal</a><a href="/explore">Explore</a><a href="/requirements">Find requirements</a><a href="/messages">Messages</a><a href="/logout">Log out</a></nav>
+
+    <div class="filters" data-filter-root="donorList">
+      <div class="field"><label for="fcat">Category</label><select id="fcat" name="fcat"><option value="">All</option>{% for c in categories %}<option value="{{ c.slug }}">{{ c.name }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="fstatus">Status</label><select id="fstatus" name="fstatus"><option value="">All</option><option value="pending">Pending</option><option value="accepted">Accepted</option><option value="handed_over">Handed over</option><option value="declined">Withdrawn</option></select></div>
+      <div class="field"><label for="fq">Search</label><input id="fq" name="fq" type="search" placeholder="e.g. books, Kothrud" /></div>
+      <button class="btn btn-outline btn-sm" type="button" data-reset>Reset</button>
+    </div>
+
+    <div class="donor-grid">
+      <aside class="rail">
+        <h3>{{ current_user.name }}</h3>
+        <p class="who">Donor{% if current_user.city %} · {{ current_user.city }}{% endif %}<br />{{ n_offers }} offer{{ 's' if n_offers != 1 }} · {{ n_handed }} handed over</p>
+        <p class="small muted" style="margin-top:4px">Donor account · {{ current_user.email }}</p>
+        <div class="rail-actions">
+          <a class="btn btn-primary btn-sm" href="/offers/new">Offer a donation</a>
+          <a class="btn btn-outline btn-sm" href="/tracking">Track donations</a>
+        </div>
+        <p class="small muted" style="margin-top:12px">Only confirmed handovers count toward impact.</p>
+      </aside>
+
+      <div>
+        {% if slips %}
+        <ol class="timeline" id="donorList">
+          {% for s in slips %}
+          <li data-cat="{{ s.offer.category }}" data-loc="{{ s.offer.location or '' }}" data-status="{{ s.offer.status }}">
+            <div class="t-head"><span class="t-title">{{ s.offer.title }}</span><span class="pill pill-{{ s.offer.status }}">{{ s.offer.status.replace('_', ' ').title() }}</span></div>
+            <p class="t-meta">{{ s.category_name }} · {{ s.offer.quantity or '—' }} · {{ s.offer.location or '—' }} · {{ s.offer.availability }}</p>
+            <p class="t-note">{{ s.offer.description }}<br /><span class="small muted">{{ s.progress.note }}</span></p>
+            <div class="row-actions" style="margin-top:8px">
+              {% if s.offer.status in ['pending', 'declined'] %}
+              <a class="btn-mini" href="/offers/{{ s.offer.id }}/edit">Edit</a>
+              {% endif %}
+              {% if s.offer.status == 'pending' %}
+              <form method="post" action="/offers/{{ s.offer.id }}/cancel" style="display:inline" onsubmit="return confirm('Withdraw this offer from the ledger?');"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}" /><button class="btn-mini danger" type="submit">Withdraw</button></form>
+              {% endif %}
+              {% if s.progress.track and s.offer.status == 'accepted' and s.progress.track.handover_status == 'pending' %}
+              <form method="post" action="/tracking/{{ s.progress.track.id }}/handover" style="display:inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}" /><button class="btn-mini primary" type="submit">Mark handed over</button></form>
+              {% endif %}
+              <a class="btn-mini" href="/tracking">Trail</a>
+            </div>
+          </li>
+          {% endfor %}
+        </ol>
+        <div class="empty" data-empty><h3>No lines match those filters.</h3><p>Try clearing the search — or start a fresh offer.</p><a class="btn btn-primary btn-sm" href="/offers/new">New offer</a></div>
+        {% else %}
+        <div class="honest-empty" style="border:1px dashed var(--line-strong);border-radius:var(--radius-md);padding:30px;text-align:center;background:var(--card)">
+          <h3>No offers yet.</h3><p class="small muted">Post your first donation — it appears here with a live status trail.</p>
+          <a class="btn btn-primary btn-sm" href="/offers/new">Offer a donation</a>
+        </div>
+        {% endif %}
+      </div>
+
+      <aside class="notices" aria-label="Recent activity">
+        <h3>Recent activity</h3><p class="small muted">Real status changes on your offers.</p>
+        {% if activity %}
+        <ul>
+          {% for h in activity %}
+          <li><span>{{ h.old_status or '—' }} → <strong>{{ h.new_status.replace('_', ' ') }}</strong> · {{ actors.get(h.changed_by, 'ShareHope') }}</span></li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="small muted" style="margin-top:10px">Nothing yet — activity lands here as NGOs respond.</p>
+        {% endif %}
+      </aside>
+    </div>
+  </div>
+</section>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/dashboards.js') }}" defer></script>{% endblock %}

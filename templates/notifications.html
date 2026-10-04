@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Notifications — ShareHope{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboards.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}" />
+{% endblock %}
+
+{% block content %}
+<section class="page">
+  <div class="wrap">
+    <div class="page-head reveal">
+      <div><span class="eyebrow">Inbox · alerts</span><h1>Nothing slips by.</h1></div>
+      <p>Signed in as {{ current_user.name }}. Accepts, matches and handover news land here straight from the ledger.</p>
+    </div>
+
+    <div class="panel reveal" style="background:var(--card);border:1px solid var(--line);border-radius:var(--radius-md);padding:18px;margin-bottom:14px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+      <nav class="dash-nav" style="border:0;padding:0;margin:0" aria-label="Filter notifications">
+        <a href="/notifications?show=all" {% if show == 'all' %}aria-current="page"{% endif %}>All ({{ counts.all }})</a>
+        <a href="/notifications?show=unread" {% if show == 'unread' %}aria-current="page"{% endif %}>Unread ({{ counts.unread }})</a>
+        <a href="/notifications?show=read" {% if show == 'read' %}aria-current="page"{% endif %}>Read ({{ counts.read }})</a>
+      </nav>
+      {% if counts.unread %}
+      <form method="post" action="/notifications/read-all" style="margin:0">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <button class="btn btn-outline btn-sm" type="submit">Mark all as read</button>
+      </form>
+      {% endif %}
+    </div>
+
+    {% if items %}
+    <div class="card-grid reveal" id="noticeGrid">
+      {% for n in items %}
+      <article class="d-card {% if not n.is_read %}unread{% endif %}">
+        <span class="cat-kicker">{{ titles.get(n.type, 'Notice') }} · {{ n.created_at.strftime('%d %b %Y, %H:%M') }}</span>
+        <h3 style="font-size:1rem">{{ n.content }}{% if not n.is_read %} <span class="pill pill-pending">New</span>{% endif %}</h3>
+        {% if not n.is_read %}
+        <div class="row-actions" style="display:flex;gap:8px">
+          <form method="post" action="/notifications/{{ n.id }}/read" style="margin:0">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <input type="hidden" name="show" value="{{ show }}" />
+            <button class="btn-mini" type="submit">Mark as read</button>
+          </form>
+        </div>
+        {% endif %}
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="honest-empty reveal">
+      {% if show == 'unread' %}
+      <h3>All caught up.</h3><p class="small muted">No unread notifications. New accepts, matches and handover news will land here.</p>
+      {% elif show == 'read' %}
+      <h3>Nothing read yet.</h3><p class="small muted">Notifications you mark as read appear here.</p>
+      {% else %}
+      <h3>No notifications yet.</h3><p class="small muted">Post an offer or publish a need — ledger events will notify you here.</p>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</section>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+{% endblock %}

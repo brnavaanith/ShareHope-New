@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}{% if offer %}Edit offer{% else %}Offer a donation{% endif %} — ShareHope{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}" />
+{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+  <div class="wrap auth-grid">
+    <div class="auth-aside">
+      <span class="eyebrow">Donor · {% if offer %}edit{% else %}new{% endif %} offer</span>
+      <h1>{% if offer %}Refine<br />your <em class="accent">offer.</em>{% else %}List what<br />you can <em class="accent">give.</em>{% endif %}</h1>
+      <p class="lede">Pending offers are visible to matching NGOs. {% if offer and offer.status == 'declined' %}Saving puts this withdrawn offer back on the ledger as pending.{% else %}Be precise — good listings get accepted faster.{% endif %}</p>
+      <ul class="auth-points">
+        <li><span class="tick">✓</span> One category, honest quantities, real pickup place.</li>
+        <li><span class="tick">✓</span> Describe condition — NGOs plan around it.</li>
+        <li><span class="tick">✓</span> Only pending or withdrawn offers can be edited.</li>
+      </ul>
+    </div>
+
+    <div class="form-card">
+      <h2>{% if offer %}Edit offer{% else %}New donation offer{% endif %}</h2>
+      <p class="form-sub">Posted under {{ current_user.name }} · status stays visible until handover.</p>
+      <form method="post" action="{% if offer %}/offers/{{ offer.id }}/edit{% else %}/offers/new{% endif %}" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="field">
+          <label for="title">Title</label>
+          <input id="title" name="title" type="text" required placeholder="e.g. 40 school books, Grade 4–6" value="{{ form.title or '' }}" />
+          <span class="field-error" aria-live="polite"></span>
+        </div>
+        <div class="field">
+          <label for="category">Category</label>
+          <select id="category" name="category" required>
+            <option value="">Choose a category</option>
+            {% for c in categories %}<option value="{{ c.slug }}" {% if form.category == c.slug %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+          </select>
+          <span class="field-error" aria-live="polite"></span>
+        </div>
+        <div class="field">
+          <label for="description">Description <span class="hint">— include condition</span></label>
+          <textarea id="description" name="description" required placeholder="What exactly, what condition, how packed…">{{ form.description or '' }}</textarea>
+          <span class="field-error" aria-live="polite"></span>
+        </div>
+        <div class="field">
+          <label for="quantity">Quantity</label>
+          <input id="quantity" name="quantity" type="text" required placeholder="e.g. 40 books, 25 kg" value="{{ form.quantity or '' }}" />
+          <span class="field-error" aria-live="polite"></span>
+        </div>
+        <div class="field">
+          <label for="location">Pickup location</label>
+          <input id="location" name="location" type="text" required autocomplete="address-level2" placeholder="e.g. Kothrud, Pune" value="{{ form.location or '' }}" />
+          <span class="field-error" aria-live="polite"></span>
+        </div>
+        <div class="field">
+          <label for="availability">Availability <span class="hint">— optional</span></label>
+          <input id="availability" name="availability" type="text" placeholder="e.g. Tue–Thu evenings" value="{{ form.availability or '' }}" />
+          <span class="field-error" aria-live="polite"></span>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" type="submit">{% if offer %}Save changes{% else %}Post offer{% endif %}</button>
+          <a class="btn btn-outline" href="/donor">Back to journal</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

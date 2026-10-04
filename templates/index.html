@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}" />
+{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div class="reveal">
+      <span class="eyebrow">Donor → NGO donation network</span>
+      <h1>Good things <span class="italic">find their</span> next home<em class="accent">.</em></h1>
+      <p class="lede">ShareHope is a shared ledger for giving. Donors list what they can offer — NGOs post what they actually need. No warehouses of unwanted goods, no guessing.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="/register">Offer a donation</a>
+        <a class="btn btn-outline" href="/register?type=ngo">Register your NGO</a>
+      </div>
+      <p class="hero-note"><strong>Two-sided by design:</strong> donor <em>offers</em> meet NGO <em>requirements</em>. Statuses stay visible until handover.</p>
+      <p class="hero-note"><a href="/explore">Explore donations</a> · <a href="/requirements">Browse NGO needs</a> · <a href="/tracking">Track a donation</a></p>
+    </div>
+
+    {# Featured slip: chosen by an admin, never auto-selected.
+       Same .slip markup and styling as before — only the data source
+       changed. No internal id is exposed. #}
+    {% if slip %}
+    <div class="reveal" aria-label="Featured donation slip">
+      <div class="slip">
+        <div class="slip-head"><span>Donation slip</span><span class="stamp">{{ slip.stamp }}</span></div>
+        <div class="slip-body">
+          <dl class="slip-row"><dt>Offer</dt><dd>{{ slip.offer }}</dd></dl>
+          <dl class="slip-row"><dt>Requirement</dt><dd>{{ slip.requirement }}</dd></dl>
+          <dl class="slip-row"><dt>Category</dt><dd>{{ slip.category }}</dd></dl>
+          <dl class="slip-row"><dt>Status</dt><dd>{{ slip.status }}</dd></dl>
+        </div>
+        <div class="slip-foot"><span>Donor · {{ slip.donor }}</span><span>{{ slip.partner }}</span></div>
+      </div>
+      <p class="slip-caption"><span class="tag-live tag-placeholder">Featured slip</span> {{ slip.title }}</p>
+    </div>
+    {% else %}
+    <div class="reveal">
+      <div class="honest-empty">
+        <span class="tag-placeholder">No featured slip yet</span>
+        <h3>The ledger picks this space.</h3>
+        <p>When our team features a donation, its slip appears right here.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><a class="btn btn-primary btn-sm" href="/explore">Explore donations</a><a class="btn btn-outline btn-sm" href="/register">Offer a donation</a></div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="wrap">
+    <div class="ledger-strip reveal" aria-label="Platform summary">
+      <div><div class="ledger-num">8 categories</div><div class="ledger-label">Books to furniture — one taxonomy everywhere.</div></div>
+      <div><div class="ledger-num">Offer + Requirement</div><div class="ledger-label">Every donation has two sides and a clear status trail.</div></div>
+      <div><div class="ledger-num">Verified NGOs</div><div class="ledger-label">NGOs self-register; admin reviews before publishing.</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="how">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div><span class="eyebrow">How ShareHope works</span><h2 style="margin-top:12px">A short ledger entry,<br />not a long process.</h2></div>
+      <p>Three steps, each with a visible record. You always know whether your offer is pending, accepted, or handed over.</p>
+    </div>
+    <div class="steps reveal">
+      <div class="step">
+        <div class="step-num">01</div>
+        <h3>Offer, or ask for, exactly what matters</h3>
+        <p>Donors describe quantity, condition and pickup. NGOs publish requirements with needed counts and deadlines.</p>
+        <span class="step-meta">2 min · guided form</span>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <h3>Match on category, place and status</h3>
+        <p>Search across eight categories, filter by location and status. NGOs accept offers; donors respond to requirements.</p>
+        <span class="step-meta">Transparent queue</span>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <h3>Hand over and close the record</h3>
+        <p>Confirm pickup or drop-off, mark handed over. Both sides keep a receipt line in the donation trail.</p>
+        <span class="step-meta">Receipts + messages</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule" />
+
+<section class="section" id="categories">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div><span class="eyebrow">Eight categories, one taxonomy</span><h2 style="margin-top:12px">Find your shelf in the ledger.</h2></div>
+      <p>The same eight categories appear on Explore, Requirements and every dashboard filter — no mismatched labels.</p>
+    </div>
+    <div class="cat-grid">
+      {% for c in categories %}
+      <a class="cat-tile reveal" href="/explore"><span class="glyph" aria-hidden="true">{{ c.glyph }}</span><strong>{{ c.name }}</strong><span>{{ c.blurb }}</span></a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section" id="featured">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div><span class="eyebrow">Featured donation</span><h2 style="margin-top:12px">The slip our team chose.</h2></div>
+      <p>One donation, selected by an admin — no rotating shelf, no random picks.</p>
+    </div>
+    {% if slip %}
+    <div class="card-grid reveal">
+      <article class="d-card"><span class="cat-kicker">{{ slip.category }}</span><h3>{{ slip.title }}</h3>
+      <dl><dt>Quantity</dt><dd>{{ slip.offer }}</dd><dt>Location</dt><dd>{{ slip.partner }}</dd></dl>
+      <p class="small muted">{{ slip.status }} · {{ slip.donor }}</p></article>
+    </div>
+    <p class="reveal" style="margin-top:14px"><a class="btn btn-outline btn-sm" href="/tracking">Track donations</a> <a class="btn btn-outline btn-sm" href="/explore">Explore all donations</a></p>
+    {% else %}
+    <div class="honest-empty reveal">
+      <span class="tag-placeholder">No featured donation right now</span>
+      <h3>Nothing is featured yet.</h3>
+      <p>We don’t stage donations that don’t exist. Browse the full directory, or list something of your own.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><a class="btn btn-primary btn-sm" href="/explore">Explore all donations</a><a class="btn btn-outline btn-sm" href="/register">Offer a donation</a></div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section" id="urgent">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div><span class="eyebrow">Urgent NGO needs</span><h2 style="margin-top:12px">Time-sensitive asks first.</h2></div>
+      <p>Needs flagged urgent surface here with quantity and location.</p>
+    </div>
+    {% if urgent %}
+    <div class="card-grid reveal">
+      {% for r in urgent %}
+      <article class="d-card urgent"><span class="cat-kicker">{{ r.category }} · urgent</span><h3><a href="/requirements/{{ r.id }}">{{ r.title }}</a></h3>
+      <dl><dt>Quantity</dt><dd>{{ r.quantity }}</dd><dt>Location</dt><dd>{{ r.location }}</dd></dl>
+      <p class="small muted">{{ r.org }}</p>
+      <p><a class="btn btn-outline btn-sm" href="/requirements/{{ r.id }}">View &amp; respond</a></p></article>
+      {% endfor %}
+    </div>
+    <p class="reveal" style="margin-top:14px"><a class="btn btn-outline btn-sm" href="/requirements">View all needs</a></p>
+    {% else %}
+    <div class="honest-empty reveal">
+      <span class="tag-placeholder">No urgent needs right now</span>
+      <h3>No urgent needs published right now.</h3>
+      <p>When NGOs publish with urgency flags, the most time-sensitive appear here instead of sample cards.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><a class="btn btn-primary btn-sm" href="/requirements">View all needs</a><a class="btn btn-outline btn-sm" href="/register?type=ngo">Register your NGO</a></div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section" id="roles">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div><span class="eyebrow">Two doors, one ledger</span><h2 style="margin-top:12px">Built differently for<br />donors and NGOs.</h2></div>
+      <p>Dashboards don’t mirror each other. Donors track giving; NGOs run intake. Admins keep the ledger honest.</p>
+    </div>
+    <div class="split reveal">
+      <div class="split-donor">
+        <span class="eyebrow">For donors</span>
+        <h3 style="margin-top:10px">Give in minutes, follow it to the door.</h3>
+        <ul>
+          <li><span class="tick">✓</span> Offer form with category-specific fields</li>
+          <li><span class="tick">✓</span> Status trail: pending → accepted → handed over</li>
+          <li><span class="tick">✓</span> Messages per donation exchange</li>
+        </ul>
+        <div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-primary" href="/register">Start as a donor</a><a class="btn btn-outline" href="/donor">Donor dashboard</a></div>
+      </div>
+      <div class="split-ngo">
+        <span class="eyebrow" style="color:var(--gold)">For NGOs</span>
+        <h3 style="margin-top:10px">Ask precisely. Receive reliably.</h3>
+        <ul>
+          <li><span class="tick">✓</span> Self-register, then publish requirements</li>
+          <li><span class="tick">✓</span> Incoming-offer inbox with accept / decline</li>
+          <li><span class="tick">✓</span> Search offers across eight categories</li>
+        </ul>
+        <p class="quote">“We stopped getting mystery bags. Now we get what we asked for.”</p>
+        <p class="small" style="color:#9fb0a0">— Illustrative line, not a testimonial.</p>
+        <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-light" href="/register?type=ngo">Register your NGO</a><a class="btn btn-outline" href="/ngo" style="border-color:#fff;color:#fff">NGO dashboard</a></div>
+      </div>
+    </div>
+
+    <div class="cta-band reveal" style="margin-top:22px">
+      <div><h3>Ledger first, embellishments later.</h3><p class="muted small">Chat and charts wait until handovers and counts are real.</p></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-primary" href="/register">Create your account</a><a class="btn btn-outline" href="/explore">Explore first</a></div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

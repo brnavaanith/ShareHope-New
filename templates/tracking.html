@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Donation Tracking — ShareHope{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboards.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/stepper.css') }}" />
+{% endblock %}
+{% macro ts(value) %}{{ value.strftime('%d %b %Y, %H:%M') if value else 'Not reached yet' }}{% endmacro %}
+
+{% block content %}
+<section class="page">
+  <div class="wrap">
+    <div class="page-head reveal">
+      <div><span class="eyebrow">Tracking · status trail</span><h1>Follow every slip.</h1></div>
+      <p>Five stages, one trail — each stepper below opens on the slip's real stage, with real timestamps from the ledger. Email updates on each transition are still to come.</p>
+    </div>
+
+    <div class="method-grid reveal" aria-label="Status stages">
+      <div class="method"><span class="step-num">①</span><h3>Pending</h3><p class="small muted">Offer visible to matching NGOs. Donors can edit or withdraw.</p><span class="pill pill-pending">Pending</span></div>
+      <div class="method"><span class="step-num">②</span><h3>Accepted</h3><p class="small muted">An NGO reserves the offer and agrees a pickup window.</p><span class="pill pill-accepted">Accepted</span></div>
+      <div class="method"><span class="step-num">③</span><h3>Handed over</h3><p class="small muted">Both sides confirm. Only this stage counts toward impact.</p><span class="pill pill-handed_over">Handed Over</span></div>
+    </div>
+
+    {% if slips %}
+    {% for s in slips %}
+    {% set stage = s.progress.stage %}
+    <div class="stepper reveal" data-stepper data-start="{{ stage }}">
+      <div class="stepper-head">
+        <h2>{{ s.title }}</h2>
+        <span class="stepper-count" aria-hidden="true">Step {{ stage + 1 }} of 5</span>
+      </div>
+      <p class="small muted" style="margin:0"><span class="cat-kicker">{{ s.category }}</span> · {{ s.progress.note }}</p>
+      <div class="stepper-rail">
+        {# Fill is server-rendered from the real stage so a completed slip
+           reads as complete immediately, before/without JS. stepper.js
+           re-applies the same value on load. #}
+        <div class="stepper-track" aria-hidden="true"><div class="stepper-fill" style="--fill: {{ (stage / 4 * 100) | round | int }}%"></div></div>
+        <ol class="stepper-nodes">
+          <li class="stepper-node" data-state="{{ 'now' if stage == 0 else 'done' }}" data-title="1 · Donation Posted" data-body="The donor's offer was recorded on the ledger." data-time="{{ ts(s.progress.ts.posted) }}">
+            <button class="stepper-dot" type="button" aria-label="View stage 1: Donation Posted"><span class="num" aria-hidden="true">1</span><span class="check" aria-hidden="true">✓</span></button>
+            <span class="stepper-tag" aria-hidden="true">Donation Posted</span>
+          </li>
+          <li class="stepper-node" data-state="{{ 'now' if stage == 1 else ('done' if stage > 1 else 'todo') }}" data-title="2 · NGO Matched" data-body="An NGO linked this offer to one of its requirements." data-time="{{ ts(s.progress.ts.matched) }}">
+            <button class="stepper-dot" type="button" aria-label="View stage 2: NGO Matched"><span class="num" aria-hidden="true">2</span><span class="check" aria-hidden="true">✓</span></button>
+            <span class="stepper-tag" aria-hidden="true">NGO Matched</span>
+          </li>
+          <li class="stepper-node" data-state="{{ 'now' if stage == 2 else ('done' if stage > 2 else 'todo') }}" data-title="3 · Donation Accepted" data-body="The NGO reserved the offer and agreed a pickup window." data-time="{{ ts(s.progress.ts.accepted) }}">
+            <button class="stepper-dot" type="button" aria-label="View stage 3: Donation Accepted"><span class="num" aria-hidden="true">3</span><span class="check" aria-hidden="true">✓</span></button>
+            <span class="stepper-tag" aria-hidden="true">Donation Accepted</span>
+          </li>
+          <li class="stepper-node" data-state="{{ 'now' if stage == 3 else ('done' if stage > 3 else 'todo') }}" data-title="4 · Handover" data-body="Goods changed hands; the donor marked the handover." data-time="{{ ts(s.progress.ts.handover) }}">
+            <button class="stepper-dot" type="button" aria-label="View stage 4: Handover"><span class="num" aria-hidden="true">4</span><span class="check" aria-hidden="true">✓</span></button>
+            <span class="stepper-tag" aria-hidden="true">Handover</span>
+          </li>
+          <li class="stepper-node" data-state="{{ 'now' if stage == 4 else 'todo' }}" data-title="5 · Completed" data-body="Receipt confirmed and written to the impact ledger." data-time="{{ ts(s.progress.ts.completed) }}">
+            <button class="stepper-dot" type="button" aria-label="View stage 5: Completed"><span class="num" aria-hidden="true">5</span><span class="check" aria-hidden="true">✓</span></button>
+            <span class="stepper-tag" aria-hidden="true">Completed</span>
+          </li>
+        </ol>
+      </div>
+      {# Server-rendered for the slip's real stage: the completed state is
+         visible without JS. stepper.js overwrites this with the same text. #}
+      <div class="stepper-detail" aria-live="polite">
+        <h3>{{ ('Donation Posted','NGO Matched','Donation Accepted','Handover','Completed')[stage] }}</h3>
+        <p>{{ ('The donor\'s offer was recorded on the ledger.','An NGO linked this offer to one of its requirements.','The NGO reserved the offer and agreed a pickup window.','Goods changed hands; the donor marked the handover.','Receipt confirmed and written to the impact ledger.')[stage] }}</p>
+        <p class="stepper-time">{{ ([s.progress.ts.posted, s.progress.ts.matched, s.progress.ts.accepted, s.progress.ts.handover, s.progress.ts.completed][stage]) }}</p>
+      </div>
+      <div class="stepper-controls">
+        <button class="btn btn-outline btn-sm" type="button" data-prev {% if stage == 0 %}disabled{% endif %}>← Previous</button>
+        <button class="btn btn-primary btn-sm" type="button" data-next {% if stage == 4 %}disabled{% endif %}>Next →</button>
+        <span class="spacer" aria-hidden="true"></span>
+        <span class="stepper-note">Browsing steps never changes a donation's status.</span>
+      </div>
+      {% if s.history %}
+      <div class="table-wrap" style="margin-top:16px"><table class="ledger" aria-label="Status history for {{ s.title }}">
+        <thead><tr><th>Change</th><th>By</th><th>When</th></tr></thead>
+        <tbody>
+          {% for h in s.history %}
+          <tr><td>{{ (h.old_status or '—').replace('_', ' ').title() }} → <strong>{{ h.new_status.replace('_', ' ').title() }}</strong></td><td>{{ h.changer.name if h.changer else 'ShareHope' }}</td><td>{{ h.created_at.strftime('%d %b %Y, %H:%M') }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table></div>
+      {% endif %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="honest-empty reveal" style="margin-top:16px">
+      <span class="tag-placeholder">No slips to track yet</span>
+      <h3>Nothing on the trail.</h3>
+      <p>Donors see their offers here; NGOs see linked requirements. Post or publish to begin.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+        <a class="btn btn-primary btn-sm" href="/donor">Donor journal</a>
+        <a class="btn btn-outline btn-sm" href="/ngo">NGO inbox</a>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="integration-note reveal" style="margin-top:18px">Email updates on each transition are still to come — the ledger itself is live.</div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/stepper.js') }}" defer></script>{% endblock %}

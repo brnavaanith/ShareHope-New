@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Profile & Settings — ShareHope{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}" />{% endblock %}
+
+{% block content %}
+<section class="page">
+  <div class="wrap">
+    <div class="page-head reveal">
+      <div><span class="eyebrow">Account · {{ current_user.role }}</span><h1>{{ current_user.name }}</h1></div>
+      <p>{{ current_user.email }}{% if current_user.org_name %} · {{ current_user.org_name }}{% endif %}{% if current_user.city %} · {{ current_user.city }}{% endif %}</p>
+    </div>
+
+    <div class="auth-grid">
+      <div class="auth-aside reveal">
+        <h2 style="font-size:1.4rem">Your account</h2>
+        <ul class="auth-points">
+          <li><span class="tick">✓</span> {{ current_user.name }} · {{ current_user.role }}</li>
+          <li><span class="tick">✓</span> {{ current_user.email }}</li>
+          {% if current_user.role == "ngo" %}
+          <li><span class="tick">✓</span> {{ current_user.org_name or "Organisation name missing — add it below." }}{% if current_user.org_reg_id %} · {{ current_user.org_reg_id }}{% endif %}</li>
+          {% endif %}
+          <li><span class="tick">✓</span> {% if current_user.city %}{{ current_user.city }}{% else %}No city set — add one below for pickup planning.{% endif %}</li>
+          <li><span class="tick">✓</span> Email {% if current_user.email_verified %}verified{% else %}not verified{% endif %}{% if not current_user.email_verified %} · <a href="/verify-email">resend verification email</a>{% endif %}</li>
+          {% if current_user.role == "donor" %}
+          <li><span class="tick">✓</span> {{ stats.offers }} offer{{ 's' if stats.offers != 1 }} · {{ stats.handed }} handed over</li>
+          {% elif current_user.role == "ngo" %}
+          <li><span class="tick">✓</span> {{ stats.reqs }} requirement{{ 's' if stats.reqs != 1 }} · {{ stats.open_reqs }} open</li>
+          {% else %}
+          <li><span class="tick">✓</span> Admin account · moderation desk access</li>
+          {% endif %}
+        </ul>
+        <div class="auth-demo"><strong>Private:</strong> only you can see this page. There are no public profile URLs on ShareHope.</div>
+      </div>
+
+      <div class="form-card reveal">
+        <h2>Profile details</h2>
+        <p class="form-sub">Name and city are saved to your account.{% if current_user.role == "ngo" %} Organisation details too.{% endif %} Email and role cannot be changed here.</p>
+        <form method="post" action="/profile" data-profile-form novalidate>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <div class="field"><label for="pname">Display name</label><input id="pname" name="name" type="text" value="{{ current_user.name }}" autocomplete="name" required minlength="2" maxlength="120" /><span class="field-error" aria-live="polite"></span></div>
+          <div class="field"><label for="pcity">City / locality</label><input id="pcity" name="city" type="text" placeholder="e.g. Kothrud, Pune" autocomplete="address-level2" maxlength="160" value="{{ current_user.city or '' }}" /><span class="field-error" aria-live="polite"></span></div>
+          {% if current_user.role == "ngo" %}
+          <div class="field"><label for="porg">Organisation name</label><input id="porg" name="org_name" type="text" value="{{ current_user.org_name or '' }}" autocomplete="organization" required minlength="2" maxlength="160" /><span class="field-error" aria-live="polite"></span></div>
+          <div class="field"><label for="porgid">Registration ID</label><input id="porgid" name="org_reg_id" type="text" value="{{ current_user.org_reg_id or '' }}" required minlength="3" maxlength="80" /><span class="field-error" aria-live="polite"></span></div>
+          {% endif %}
+          <div class="form-actions"><button class="btn btn-primary" id="profileSaveBtn" type="submit">Save changes</button><span class="small muted" id="profileSaving" hidden>Saving…</span></div>
+        </form>
+      </div>
+
+      <div class="form-card reveal">
+        <h2>Change password</h2>
+        <p class="form-sub">Current password required. Minimum 8 characters. Passwords are hashed — never stored or shown.</p>
+        <form method="post" action="/profile/password" data-profile-form novalidate>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <div class="field"><label for="curpw">Current password</label><input id="curpw" name="current_password" type="password" autocomplete="current-password" required placeholder="••••••••" /><span class="field-error" aria-live="polite"></span></div>
+          <div class="field"><label for="newpw">New password</label><input id="newpw" name="new_password" type="password" autocomplete="new-password" required minlength="8" maxlength="256" placeholder="Choose carefully" /><span class="field-error" aria-live="polite"></span></div>
+          <div class="field"><label for="confpw">Confirm new password</label><input id="confpw" name="confirm_password" type="password" autocomplete="new-password" required placeholder="Repeat it" /><span class="field-error" aria-live="polite"></span></div>
+          <div class="form-actions"><button class="btn btn-outline" id="passwordSaveBtn" type="submit">Change password</button><span class="small muted" id="passwordSaving" hidden>Updating…</span></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/auth.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/profile.js') }}" defer></script>
+{% endblock %}

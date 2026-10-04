@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}{% if req %}Edit requirement{% else %}Publish a requirement{% endif %} — ShareHope{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}" />
+{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+  <div class="wrap auth-grid">
+    <div class="auth-aside">
+      <span class="eyebrow">NGO · {% if req %}edit{% else %}new{% endif %} requirement</span>
+      <h1>Ask<br /><em class="accent">precisely.</em></h1>
+      <p class="lede">Precise needs get precise offers. Quantities, place and urgency decide who sees this first.</p>
+      <ul class="auth-points">
+        <li><span class="tick">✓</span> One category per requirement keeps matching clean.</li>
+        <li><span class="tick">✓</span> Urgent needs surface first across the platform.</li>
+        <li><span class="tick">✓</span> Close or fulfil it when the need is met.</li>
+      </ul>
+    </div>
+
+    <div class="form-card">
+      <h2>{% if req %}Edit requirement{% else %}New requirement{% endif %}</h2>
+      <p class="form-sub">Published as {{ current_user.org_name or current_user.name }} · only open needs can be edited.</p>
+      <form method="post" action="{% if req %}/requirements/{{ req.id }}/edit{% else %}/requirements/new{% endif %}" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="field">
+          <label for="title">Title</label>
+          <input id="title" name="title" type="text" required placeholder="e.g. 50 storybooks for Grade 3–5" value="{{ form.title or '' }}" />
+          <span class="field-error" aria-live="polite"></span>
+        </div>
+        <div class="field">
+          <label for="category">Category</label>
+          <select id="category" name="category" required>
+            <option value="">Choose a category</option>
+            {% for c in categories %}<option value="{{ c.slug }}" {% if form.category == c.slug %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+          </select>
+          <span class="field-error" aria-live="polite"></span>
+        </div>
+        <div class="field">
+          <label for="description">Description</label>
+          <textarea id="description" name="description" required placeholder="What exactly, for whom, any constraints…">{{ form.description or '' }}</textarea>
+          <span class="field-error" aria-live="polite"></span>
+        </div>
+        <div class="field">
+          <label for="required_quantity">Required quantity</label>
+          <input id="required_quantity" name="required_quantity" type="text" required placeholder="e.g. 50 books, 120 kg" value="{{ form.required_quantity or '' }}" />
+          <span class="field-error" aria-live="polite"></span>
+        </div>
+        <div class="field">
+          <label for="location">Location needed</label>
+          <input id="location" name="location" type="text" required autocomplete="address-level2" placeholder="e.g. Kothrud, Pune" value="{{ form.location or '' }}" />
+          <span class="field-error" aria-live="polite"></span>
+        </div>
+        <div class="field">
+          <label for="urgency">Urgency</label>
+          <select id="urgency" name="urgency" required>
+            <option value="open" {% if (form.urgency or 'open') == 'open' %}selected{% endif %}>Open — no rush</option>
+            <option value="soon" {% if form.urgency == 'soon' %}selected{% endif %}>Needed soon</option>
+            <option value="urgent" {% if form.urgency == 'urgent' %}selected{% endif %}>Urgent</option>
+          </select>
+          <span class="field-error" aria-live="polite"></span>
+        </div>
+        <div class="field">
+          <label for="deadline">Deadline <span class="hint">— optional</span></label>
+          <input id="deadline" name="deadline" type="date" value="{{ form.deadline or '' }}" />
+          <span class="field-error" aria-live="polite"></span>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" type="submit">{% if req %}Save changes{% else %}Publish requirement{% endif %}</button>
+          <a class="btn btn-outline" href="/ngo">Back to inbox</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

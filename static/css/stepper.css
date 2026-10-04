@@ -1,0 +1,98 @@
+/* ShareHope donation stepper — loaded ONLY by the Tracking page.
+   Editorial Ledger identity: cream card, forest completed, terracotta current. */
+.stepper {
+  background: var(--card);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 30px 30px 26px;
+  margin-top: 22px;
+  min-width: 0;
+}
+.stepper-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+.stepper-head h2 { font-size: 1.45rem; }
+.stepper-count { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+
+/* Rail: nodes + animated progress fill. */
+.stepper-rail { position: relative; margin: 26px 6px 8px; }
+.stepper-track {
+  position: absolute; left: 26px; right: 26px; top: 21px; height: 2px;
+  background: var(--line); border-radius: 2px;
+}
+.stepper-fill {
+  position: absolute; left: 0; top: 0; height: 100%; width: var(--fill, 0%);
+  background: var(--forest); border-radius: 2px;
+  transition: width 480ms var(--ease);
+}
+.stepper-nodes {
+  position: relative; list-style: none; padding: 0; margin: 0;
+  display: grid; grid-template-columns: repeat(5, 1fr);
+}
+.stepper-node { display: grid; justify-items: center; gap: 8px; min-width: 0; }
+.stepper-dot {
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 2px solid var(--line-strong); background: var(--paper);
+  color: var(--muted); font-family: var(--font-display); font-size: 1.05rem; font-weight: 600;
+  display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+  transition: transform 260ms var(--ease), background 260ms var(--ease),
+    border-color 260ms var(--ease), color 260ms var(--ease), box-shadow 260ms var(--ease);
+}
+.stepper-dot:hover { border-color: var(--forest); color: var(--forest); }
+.stepper-dot .check { display: none; font-size: 1.1rem; }
+.stepper-dot .num { display: inline; }
+.stepper-node[data-state="done"] .stepper-dot {
+  background: var(--forest); border-color: var(--forest); color: #fff;
+}
+.stepper-node[data-state="done"] .stepper-dot .check { display: inline; }
+.stepper-node[data-state="done"] .stepper-dot .num { display: none; }
+.stepper-node[data-state="now"] .stepper-dot {
+  border-color: var(--terra); color: var(--terra-deep); background: #fff;
+  box-shadow: 0 0 0 5px rgba(227, 122, 92, 0.2);
+  transform: scale(1.1);
+}
+.stepper-tag {
+  font-size: 0.8rem; font-weight: 600; text-align: center; line-height: 1.3;
+  color: var(--muted); overflow-wrap: break-word; max-width: 130px;
+}
+.stepper-node[data-state="now"] .stepper-tag { color: var(--forest-2); }
+.stepper-node[data-state="done"] .stepper-tag { color: var(--forest); }
+
+/* Detail panel: swaps with a soft fade/slide. */
+.stepper-detail {
+  border: 1px solid var(--line); border-radius: var(--radius-md);
+  background: #fff; padding: 20px 22px; margin-top: 20px; min-height: 148px;
+}
+.stepper-detail.swap { animation: step-in 380ms var(--ease); }
+@keyframes step-in {
+  from { opacity: 0; transform: translateY(10px); filter: blur(3px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+.stepper-detail h3 { font-size: 1.25rem; margin-bottom: 6px; }
+.stepper-detail p { color: var(--ink-soft); font-size: 0.96rem; max-width: 44em; }
+.stepper-time {
+  margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line-strong);
+  font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted);
+}
+
+/* Controls. */
+.stepper-controls { display: flex; align-items: center; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
+.stepper-controls .spacer { flex: 1; }
+.stepper-note { font-size: 0.82rem; color: var(--muted); }
+
+/* Vertical mode for narrow screens. */
+@media (max-width: 700px) {
+  .stepper { padding: 22px 18px; }
+  .stepper-rail { margin: 20px 0 4px 4px; }
+  .stepper-track { left: 21px; right: auto; top: 26px; bottom: 26px; width: 2px; height: auto; }
+  .stepper-fill { width: 100%; height: var(--fill, 0%); transition: height 480ms var(--ease); }
+  .stepper-nodes { grid-template-columns: 1fr; gap: 18px; }
+  .stepper-node { grid-template-columns: 44px 1fr; justify-items: start; align-items: center; }
+  .stepper-tag { text-align: left; max-width: none; font-size: 0.9rem; }
+  .stepper-detail { min-height: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stepper-fill, .stepper-dot { transition: none; }
+  .stepper-node[data-state="now"] .stepper-dot { transform: none; }
+  .stepper-detail.swap { animation: none; }
+}
