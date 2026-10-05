@@ -65,10 +65,21 @@ db_name = os.getenv("DB_NAME", "sharehope")
 if not db_user or not db_password:
     raise RuntimeError("Database credentials are missing from .env")
 
+db_ssl_ca = os.getenv("DB_SSL_CA")
+
 app.config["SQLALCHEMY_DATABASE_URI"] = (
     f"mysql+pymysql://{db_user}:{quote_plus(db_password)}"
     f"@{db_host}:{db_port}/{db_name}"
 )
+
+if db_ssl_ca:
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "connect_args": {
+            "ssl": {
+                "ca": db_ssl_ca
+            }
+        }
+    }
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
